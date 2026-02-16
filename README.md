@@ -108,8 +108,8 @@ Make sure you have:
 ### **1. Clone the Repository**
 
 ```bash
-https://github.com/pratikdevelops/car-rental-mern.git
-cd car-rental-mern
+https://github.com/PratikDevelops/CarRental-fullstack.git
+cd CarRental-fullstack
 ```
 
 ### **2. Install Frontend Dependencies**
