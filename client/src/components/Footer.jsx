@@ -1,120 +1,68 @@
-import React from "react";
-import { assets } from "../assets/assets";
-import { motion } from "motion/react";
-
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay },
-});
+import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
   return (
-    <footer className="px-6 md:px-16 lg:px-24 xl:px-32 mt-48 text-sm text-gray-500">
-      <motion.div
-        {...fadeUp(0)}
-        className="flex flex-wrap justify-between items-start gap-10 pb-10 border-b border-borderColor"
-      >
-        <div className="max-w-sm">
-          <motion.img
-            {...fadeUp(0.2)}
-            src={assets.logo}
-            alt="logo"
-            className="h-9 mb-3"
-          />
+    <footer className='bg-black text-white py-16 md:py-24 border-t border-zinc-900 mt-auto'>
+      <div className='max-w-7xl mx-auto px-6 lg:px-12'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-8'>
+          
+          {/* 1. Brand & Tagline */}
+          <div className='lg:col-span-1'>
+            <Link to='/' className='inline-block mb-6' onClick={() => window.scrollTo(0,0)}>
+              <span className='text-2xl md:text-3xl font-bold tracking-tighter text-white'>
+                mongoori <span className='text-gray-500'>rides.</span>
+              </span>
+            </Link>
+            <p className='text-gray-400 text-sm font-light leading-relaxed max-w-xs'>
+              Redefining mobility in Orange County. Sustainable luxury at your fingertips.
+            </p>
+          </div>
 
-          <motion.p {...fadeUp(0.3)} className="leading-relaxed">
-            Premium car rental service with a wide selection of luxury and
-            everyday vehicles for all your driving needs.
-          </motion.p>
+          {/* 2. Explore Links */}
+          <div>
+            <h4 className='text-xs font-bold tracking-widest uppercase text-white mb-6'>Explore</h4>
+            <ul className='space-y-4 text-sm text-gray-400 font-light'>
+              <li><Link to='/fleet' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Fleet</Link></li>
+              <li><Link to='/my-bookings' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>My Bookings</Link></li>
+              <li><Link to='/owner/dashboard' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Dashboard</Link></li>
+              <li><Link to='/our-story' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Our Story</Link></li>
+            </ul>
+          </div>
 
-          <motion.div
-            {...fadeUp(0.4)}
-            className="flex items-center gap-4 mt-6"
-          >
-            {[assets.facebook_logo, assets.instagram_logo, assets.twitter_logo, assets.gmail_logo].map(
-              (logo, i) => (
-                <a key={i} href="#">
-                  <img src={logo} className="w-5 h-5 hover:opacity-70 transition" />
-                </a>
-              )
-            )}
-          </motion.div>
+          {/* 3. Legal Links */}
+          <div>
+            <h4 className='text-xs font-bold tracking-widest uppercase text-white mb-6'>Legal</h4>
+            <ul className='space-y-4 text-sm text-gray-400 font-light'>
+              {/* 라우트 경로가 PrivacyPolicy.jsx, TermsOfUse.jsx 등에 맞게 수정 필요 시 경로 확인 요망 */}
+              <li><Link to='/privacy-policy' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Privacy Policy</Link></li>
+              <li><Link to='/terms-of-use' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Terms of Use</Link></li>
+              <li><Link to='/insurance' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Insurance</Link></li>
+            </ul>
+          </div>
+
+          {/* 4. Contact Info */}
+          <div>
+            <h4 className='text-xs font-bold tracking-widest uppercase text-white mb-6'>Location</h4>
+            <ul className='space-y-4 text-sm text-gray-400 font-light'>
+              <li>Irvine, CA 92612</li>
+              <li className='text-white font-medium'>+1 (949) 385-3271</li>
+              <li><a href="mailto:contact@mongoori.com" className='hover:text-white transition-colors'>contact@mongoori.com</a></li>
+            </ul>
+          </div>
         </div>
 
-        <motion.div
-          {...fadeUp(0.3)}
-          className="flex flex-wrap justify-between w-full md:w-1/2 gap-10"
-        >
-          <div>
-            <h2 className="text-base font-medium text-gray-900 uppercase tracking-wide">
-              Quick Links
-            </h2>
-            <ul className="mt-4 flex flex-col gap-2">
-              {["Home", "Browse Cars", "List Your Car", "About Us"].map(
-                (item) => (
-                  <li key={item}>
-                    <a className="hover:text-gray-700 transition" href="#">
-                      {item}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
+        {/* Bottom Copyright */}
+        <div className='mt-20 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600 uppercase tracking-wider text-center md:text-left'>
+          <p>&copy; {new Date().getFullYear()} MONGOORI RIDES. DESIGNED IN IRVINE.</p>
+          <div className='flex gap-6'>
+            <Link to='/privacy-policy' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Privacy</Link>
+            <Link to='/terms-of-use' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Terms</Link>
           </div>
-
-          <div>
-            <h2 className="text-base font-medium text-gray-900 uppercase tracking-wide">
-              Resources
-            </h2>
-            <ul className="mt-4 flex flex-col gap-2">
-              {["Help Center", "Terms of Service", "Privacy Policy", "Insurance"].map(
-                (item) => (
-                  <li key={item}>
-                    <a className="hover:text-gray-700 transition" href="#">
-                      {item}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="text-base font-medium text-gray-900 uppercase tracking-wide">
-              Contact
-            </h2>
-            <ul className="mt-4 flex flex-col gap-2">
-              <li>1234 Luxury Drive</li>
-              <li>San Francisco, CA 94107</li>
-              <li>+1 234 567890</li>
-              <li>info@example.com</li>
-            </ul>
-          </div>
-        </motion.div>
-      </motion.div>
-
-      <motion.div
-        {...fadeUp(0.5)}
-        className="flex flex-col md:flex-row gap-3 items-center justify-between py-6 text-gray-600"
-      >
-        <p>© {new Date().getFullYear()} Brand. All rights reserved.</p>
-
-        <ul className="flex items-center gap-4">
-          {["Privacy", "Terms", "Cookies"].map((item, i) => (
-            <React.Fragment key={item}>
-              <li>
-                <a className="hover:text-gray-800 transition" href="#">
-                  {item}
-                </a>
-              </li>
-              {i < 2 && <span>|</span>}
-            </React.Fragment>
-          ))}
-        </ul>
-      </motion.div>
+        </div>
+      </div>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

@@ -1,55 +1,64 @@
 import React from 'react'
-import { assets } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
+import { assets } from '../assets/assets'
 
-const CarCard = ({car}) => {
-
-    const currency = import.meta.env.VITE_CURRENCY
-    const navigate = useNavigate()
+const CarCard = ({ car }) => {
+  const navigate = useNavigate()
 
   return (
-    <div onClick={()=> {navigate(`/car-details/${car._id}`); scrollTo(0,0)}} className='group rounded-xl overflow-hidden shadow-lg hover:-translate-y-1 transition-all duration-500 cursor-pointer'>
+    <div className='bg-zinc-900/40 border border-zinc-800 rounded-3xl overflow-hidden hover:border-gray-500 transition-all duration-300 flex flex-col group shadow-lg'>
       
-      <div className='relative h-48 overflow-hidden'> 
-        <img src={car.image} alt="Car Image" className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105'/>
-
-        {car.isAvaliable && <p className='absolute top-4 left-4 bg-primary/90 text-white text-xs px-2.5 py-1 rounded-full'>Available Now</p>}
-
-        <div className='absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm text-white px-3 py-2 rounded-lg'>
-            <span className='font-semibold'>{currency}{car.pricePerDay}</span>
-            <span className='text-sm text-white/80'> / day</span>
+      {/* 1. 이미지 및 뱃지 영역 */}
+      <div className='relative w-full h-48 sm:h-56 bg-gradient-to-b from-white to-gray-300 flex justify-center items-center overflow-hidden'>
+        
+        {/* AVAILABLE 뱃지 */}
+        <div className='absolute top-4 left-4 bg-black/80 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest z-10'>
+          Available
         </div>
+        
+        {/* 자동차 이미지 */}
+        <img 
+          src={car.image || assets.main_car} 
+          alt={car.model} 
+          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-700' 
+        />
       </div>
 
-      <div className='p-4 sm:p-5'>
-        <div className='flex justify-between items-start mb-2'>
-            <div>
-                <h3 className='text-lg font-medium'>{car.brand} {car.model}</h3>
-                <p className='text-muted-foreground text-sm'>{car.category} • {car.year}</p>
-            </div>
+      {/* 2. 하단 정보 영역 */}
+      <div className='p-6 flex flex-col flex-1 bg-zinc-900/30'>
+        <div className='flex justify-between items-start mb-4'>
+          <div>
+            <h3 className='text-xl md:text-2xl font-bold text-white mb-1'>{car.model || 'Tesla Model'}</h3>
+            <p className='text-xs text-gray-400 uppercase tracking-wider'>
+              {car.category || 'SUV'} • {car.year || '2026'}
+            </p>
+          </div>
+          <div className='text-right'>
+            <p className='text-xl md:text-2xl font-bold text-white'>${car.pricePerDay || car.price || '150'}</p>
+            <p className='text-[10px] text-gray-500 uppercase tracking-wider'>Per Day</p>
+          </div>
         </div>
 
-        <div className='mt-4 grid grid-cols-2 gap-y-2 text-gray-600'>
-            <div className='flex items-center text-sm text-muted-foreground'>
-                <img src={assets.users_icon} alt="" className='h-4 mr-2'/>
-                <span>{car.seating_capacity} Seats</span>
-            </div>
-            <div className='flex items-center text-sm text-muted-foreground'>
-                <img src={assets.fuel_icon} alt="" className='h-4 mr-2'/>
-                <span>{car.fuel_type}</span>
-            </div>
-            <div className='flex items-center text-sm text-muted-foreground'>
-                <img src={assets.car_icon} alt="" className='h-4 mr-2'/>
-                <span>{car.transmission}</span>
-            </div>
-            <div className='flex items-center text-sm text-muted-foreground'>
-                <img src={assets.location_icon} alt="" className='h-4 mr-2'/>
-                <span>{car.location}</span>
-            </div>
+        {/* 아이콘 정보 */}
+        <div className='flex items-center gap-6 mb-6 text-sm text-gray-400'>
+          <div className='flex items-center gap-2'>
+            <img src={assets.users_icon} alt="Seats" className='w-4 h-4 opacity-70' />
+            <span>{car.seats || '5'} Seats</span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <img src={assets.fuel_icon} alt="Fuel" className='w-4 h-4 opacity-70' />
+            <span>{car.fuelType || 'Electric'}</span>
+          </div>
         </div>
 
+        {/* 버튼 */}
+        <button 
+          onClick={() => navigate(`/car-details/${car._id}`)}
+          className='w-full bg-white text-black py-4 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors mt-auto shadow-[0_4px_14px_0_rgba(255,255,255,0.1)]'
+        >
+          View Details
+        </button>
       </div>
-
     </div>
   )
 }

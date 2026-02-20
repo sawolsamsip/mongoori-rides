@@ -1,110 +1,121 @@
 import React, { useEffect, useState } from 'react'
-import Title from '../components/Title'
-import { assets, dummyCarData } from '../assets/assets'
-import CarCard from '../components/CarCard'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom' 
 import { useAppContext } from '../context/AppContext'
-import toast from 'react-hot-toast'
-import { motion } from 'motion/react'
+import { motion } from 'framer-motion'
+import CarCard from '../components/CarCard'
+import Loader from '../components/Loader'
 
 const Cars = () => {
+    const { cars } = useAppContext()
+    const [filterCars, setFilterCars] = useState([])
+    const [loading, setLoading] = useState(true)
+    const location = useLocation()
+    const navigate = useNavigate()
 
-  // getting search params from url
-  const [searchParams] = useSearchParams()
-  const pickupLocation = searchParams.get('pickupLocation')
-  const pickupDate = searchParams.get('pickupDate')
-  const returnDate = searchParams.get('returnDate')
+    const searchModel = location.state?.model;
 
-  const {cars, axios} = useAppContext()
+    // 페이지 진입 시 스크롤 맨 위로
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
-  const [input, setInput] = useState('')
+    useEffect(() => {
+        if (cars && cars.length > 0) {
+            if (searchModel && searchModel !== "") {
+                const filtered = cars.filter(car => car.model === searchModel);
+                setFilterCars(filtered);
+            } else {
+                setFilterCars(cars);
+            }
+            setLoading(false);
+        } else if (cars && cars.length === 0) {
+             setLoading(false); // 차량 데이터가 아예 없을 경우 무한 로딩 방지
+        }
+    }, [cars, searchModel]);
 
-  const isSearchData = pickupLocation && pickupDate && returnDate
-  const [filteredCars, setFilteredCars] = useState([])
-
-  const applyFilter = async ()=>{
-     
-    if(input === ''){
-      setFilteredCars(cars)
-      return null
+    // 필터 초기화 함수
+    const clearFilter = () => {
+        navigate('/fleet', { state: {} }); // state를 비워서 다시 라우팅
+        setFilterCars(cars);
     }
 
-    const filtered = cars.slice().filter((car)=>{
-      return car.brand.toLowerCase().includes(input.toLowerCase())
-      || car.model.toLowerCase().includes(input.toLowerCase())  
-      || car.category.toLowerCase().includes(input.toLowerCase())  
-      || car.transmission.toLowerCase().includes(input.toLowerCase())
-    })
-    setFilteredCars(filtered)
-  }
-
-  const searchCarAvailablity = async () =>{
-    const {data} = await axios.post('/api/bookings/check-availability', {location: pickupLocation, pickupDate, returnDate})
-    if (data.success) {
-      setFilteredCars(data.availableCars)
-      if(data.availableCars.length === 0){
-        toast('No cars available')
-      }
-      return null
+    if (loading) {
+        return (
+            <div className='bg-black min-h-screen flex items-center justify-center'>
+                <Loader />
+            </div>
+        )
     }
-  }
 
-  useEffect(()=>{
-    isSearchData && searchCarAvailablity()
-  },[])
+    return (
+        <div className='flex flex-col items-center pt-32 px-6 md:px-16 lg:px-24 bg-black min-h-screen text-white relative overflow-hidden'>
+            
+            {/* 배경 은은한 빛 효과 */}
+            <div className="absolute top-[-10%] left-[20%] w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-  useEffect(()=>{
-    cars.length > 0 && !isSearchData && applyFilter()
-  },[input, cars])
-
-  return (
-    <div>
-
-      <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-
-      className='flex flex-col items-center py-20 bg-light max-md:px-4'>
-        <Title title='Available Cars' subTitle='Browse our selection of premium vehicles available for your next adventure'/>
-
-        <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-
-        className='flex items-center bg-white px-4 mt-6 max-w-140 w-full h-12 rounded-full shadow'>
-          <img src={assets.search_icon} alt="" className='w-4.5 h-4.5 mr-2'/>
-
-          <input onChange={(e)=> setInput(e.target.value)} value={input} type="text" placeholder='Search by make, model, or features' className='w-full h-full outline-none text-gray-500'/>
-
-          <img src={assets.filter_icon} alt="" className='w-4.5 h-4.5 ml-2'/>
-        </motion.div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-
-      className='px-6 md:px-16 lg:px-24 xl:px-32 mt-10'>
-        <p className='text-gray-500 xl:px-20 max-w-7xl mx-auto'>Showing {filteredCars.length} Cars</p>
-
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-4 xl:px-20 max-w-7xl mx-auto'>
-          {filteredCars.map((car, index)=> (
-            <motion.div key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * index, duration: 0.4 }}
+            {/* 헤더 섹션 */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className='text-center mb-16 relative z-10 w-full max-w-4xl'
             >
-              <CarCard car={car}/>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
+                <h2 className='text-[10px] md:text-xs font-bold tracking-[0.5em] text-gray-500 uppercase mb-4'>
+                    The mongoori Collection
+                </h2>
+                <h1 className='text-4xl md:text-6xl font-black tracking-tighter leading-tight'>
+                    {searchModel ? (
+                        <>
+                            <span className='text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400'>
+                                {searchModel}
+                            </span> 
+                            <br className='md:hidden' /> Listings
+                        </>
+                    ) : (
+                        'Available Fleet'
+                    )}
+                </h1>
+                <p className='text-gray-400 mt-6 text-sm md:text-base font-light max-w-xl mx-auto'>
+                    Select the perfect Tesla for your journey. Experience uncompromised performance and luxury right here in Irvine, CA.
+                </p>
 
-    </div>
-  )
+                {/* 검색 필터가 적용된 경우 '필터 해제' 버튼 노출 */}
+                {searchModel && (
+                     <button 
+                        onClick={clearFilter}
+                        className='mt-8 px-6 py-2 bg-zinc-900 border border-zinc-700 text-xs text-white uppercase tracking-widest rounded-full hover:bg-zinc-800 transition-colors'
+                     >
+                         Clear Filter: {searchModel} ✕
+                     </button>
+                )}
+            </motion.div>
+
+            {/* 차량 리스트 (그리드) */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.3 }}
+                className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-10 w-full max-w-7xl mb-32 relative z-10'
+            >
+                {filterCars.length > 0 ? (
+                    filterCars.map((car, index) => (
+                        <CarCard key={car._id || index} car={car} />
+                    ))
+                ) : (
+                    /* 검색 결과가 없을 때의 UI 개선 */
+                    <div className='col-span-full text-center py-32 bg-zinc-900/30 border border-dashed border-zinc-800 rounded-[3rem]'>
+                        <p className='text-gray-400 text-lg font-light mb-6'>No models currently available matching your criteria.</p>
+                        <button 
+                            onClick={clearFilter} 
+                            className='px-8 py-3 bg-white text-black font-bold text-xs uppercase tracking-widest rounded-full hover:bg-gray-200 transition-all'
+                        >
+                            View Entire Fleet
+                        </button>
+                    </div>
+                )}
+            </motion.div>
+        </div>
+    )
 }
 
 export default Cars

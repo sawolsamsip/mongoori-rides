@@ -1,31 +1,37 @@
 import React, { useState } from 'react'
-import Title from '../../components/owner/Title'
-import { assets } from '../../assets/assets'
+import upload_icon from '../../assets/upload_icon.svg' 
+import tick_icon from '../../assets/tick_icon.svg' 
 import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 
 const AddCar = () => {
-
-  const {axios, currency} = useAppContext()
+  const { axios, currency } = useAppContext()
 
   const [image, setImage] = useState(null)
   const [car, setCar] = useState({
-    brand: '',
+    brand: 'Tesla',
     model: '',
-    year: 0,
-    pricePerDay: 0,
+    year: new Date().getFullYear(),
+    pricePerDay: '',
     category: '',
-    transmission: '',
-    fuel_type: '',
-    seating_capacity: 0,
-    location: '',
+    autopilot: 'Basic',
+    battery_range: '',
+    seating_capacity: 5,
+    location: 'Irvine, CA', // Irvine으로 고정
     description: '',
   })
 
   const [isLoading, setIsLoading] = useState(false)
-  const onSubmitHandler = async (e)=>{
+
+  const onSubmitHandler = async (e) => {
     e.preventDefault()
-    if(isLoading) return null
+    if (!image) return toast.error("Please upload a high-res car image.")
+    
+    // 필수 데이터 최종 검증
+    if (!car.model || !car.pricePerDay || !car.battery_range || !car.description) {
+      return toast.error("Please fill in all required technical specs.")
+    }
 
     setIsLoading(true)
     try {
@@ -33,137 +39,185 @@ const AddCar = () => {
       formData.append('image', image)
       formData.append('carData', JSON.stringify(car))
 
-      const {data} = await axios.post('/api/owner/add-car', formData)
+      const { data } = await axios.post('/api/owner/add-car', formData)
 
-      if(data.success){
-        toast.success(data.message)
+      if (data.success) {
+        toast.success("Tesla Listed Successfully!")
         setImage(null)
         setCar({
-          brand: '',
+          brand: 'Tesla',
           model: '',
-          year: 0,
-          pricePerDay: 0,
+          year: new Date().getFullYear(),
+          pricePerDay: '',
           category: '',
-          transmission: '',
-          fuel_type: '',
-          seating_capacity: 0,
-          location: '',
+          autopilot: 'Basic',
+          battery_range: '',
+          seating_capacity: 5,
+          location: 'Irvine, CA',
           description: '',
         })
-      }else{
+      } else {
         toast.error(data.message)
       }
     } catch (error) {
+      console.error(error)
       toast.error(error.message)
-    }finally{
+    } finally {
       setIsLoading(false)
     }
   }
 
+  // 공통 Input 클래스 스타일 (코드를 깔끔하게 유지하기 위함)
+  const inputClass = "bg-black/50 border border-zinc-800 p-4 rounded-2xl text-white outline-none focus:border-gray-400 transition-colors text-sm w-full"
+  const labelClass = "text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 block"
+
   return (
-    <div className='px-4 py-10 md:px-10 flex-1'>
+    <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className='w-full text-white'
+    >
+        {/* 헤더 타이틀 */}
+        <div className='mb-10'>
+            <h2 className='text-[10px] font-bold tracking-[0.3em] text-gray-500 uppercase mb-2'>Partner Program</h2>
+            <h1 className='text-3xl md:text-4xl font-black tracking-tight'>List Your Tesla.</h1>
+            <p className='text-gray-400 text-sm mt-3 font-light max-w-xl'>
+                Turn your vehicle into a high-earning asset. Location is currently restricted to <strong className='text-white font-medium'>Irvine, CA</strong> to ensure premium service quality.
+            </p>
+        </div>
 
-      <Title title="Add New Car" subTitle="Fill in details to list a new car for booking, including pricing, availability, and car specifications."/>
-
-      <form onSubmit={onSubmitHandler} className='flex flex-col gap-5 text-gray-500 text-sm mt-6 max-w-xl'>
-
-        {/* Car Image */}
-        <div className='flex items-center gap-2 w-full'>
-          <label htmlFor="car-image">
-            <img src={image ? URL.createObjectURL(image) : assets.upload_icon} alt="" className='h-14 rounded cursor-pointer'/>
-            <input type="file" id="car-image" accept="image/*" hidden onChange={e=> setImage(e.target.files[0])}/>
+        {/* 메인 폼 */}
+        <motion.form 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            onSubmit={onSubmitHandler} 
+            className='bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-[2.5rem] p-8 md:p-12 w-full max-w-4xl shadow-2xl space-y-10'
+        >
+        
+        {/* 1. 차량 이미지 업로드 */}
+        <div>
+          <label className={labelClass}>Vehicle Photo</label>
+          <label htmlFor="car-image" className='group relative w-full md:w-2/3 lg:w-1/2 h-56 md:h-64 bg-zinc-900/50 border-2 border-dashed border-zinc-700 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:border-gray-500 hover:bg-zinc-800/50 transition-all overflow-hidden'>
+            {image ? (
+                <img src={URL.createObjectURL(image)} alt="Preview" className='w-full h-full object-contain p-4 drop-shadow-xl'/>
+            ) : (
+                <div className='flex flex-col items-center gap-4 text-center px-6'>
+                    <div className='w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform'>
+                        <img src={upload_icon} alt="" className='w-6 invert opacity-70'/>
+                    </div>
+                    <div>
+                        <p className='text-sm font-bold text-gray-300'>Upload High-Res Photo</p>
+                        <p className='text-xs text-gray-500 mt-1 font-light'>PNG, JPG up to 5MB</p>
+                    </div>
+                </div>
+            )}
+            <input type="file" id="car-image" accept="image/*" hidden onChange={e => setImage(e.target.files[0])} />
           </label>
-          <p className='text-sm text-gray-500'>Upload a picture of your car</p>
         </div>
 
-        {/* Car Brand & Model */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <div className='flex flex-col w-full'>
-            <label>Brand</label>
-            <input type="text" placeholder="e.g. BMW, Mercedes, Audi..." required className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none' value={car.brand} onChange={e=> setCar({...car, brand: e.target.value})}/>
-          </div>
-          <div className='flex flex-col w-full'>
-            <label>Model</label>
-            <input type="text" placeholder="e.g. X5, E-Class, M4..." required className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none' value={car.model} onChange={e=> setCar({...car, model: e.target.value})}/>
-          </div>
-          
-        </div>
+        <div className='h-[1px] w-full bg-zinc-800/50'></div>
 
-        {/* Car Year, Price, Category */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
-          <div className='flex flex-col w-full'>
-            <label>Year</label>
-            <input type="number" placeholder="2025" required className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none' value={car.year} onChange={e=> setCar({...car, year: e.target.value})}/>
-          </div>
-          <div className='flex flex-col w-full'>
-            <label>Daily Price ({currency})</label>
-            <input type="number" placeholder="100" required className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none' value={car.pricePerDay} onChange={e=> setCar({...car, pricePerDay: e.target.value})}/>
-          </div>
-          <div className='flex flex-col w-full'>
-            <label>Category</label>
-            <select onChange={e=> setCar({...car, category: e.target.value})} value={car.category} className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none'>
-              <option value="">Select a category</option>
-              <option value="Sedan">Sedan</option>
-              <option value="SUV">SUV</option>
-              <option value="Van">Van</option>
+        {/* 2. 모델 & 서비스 위치 */}
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+          <div>
+            <label className={labelClass}>Tesla Model</label>
+            <select required className={inputClass} value={car.model} onChange={e => setCar({ ...car, model: e.target.value })}>
+              <option value="" className='bg-zinc-900'>Select Model</option>
+              <option value="Model 3" className='bg-zinc-900'>Model 3</option>
+              <option value="Model Y" className='bg-zinc-900'>Model Y</option>
+              <option value="Model S" className='bg-zinc-900'>Model S</option>
+              <option value="Model X" className='bg-zinc-900'>Model X</option>
+              <option value="Cybertruck" className='bg-zinc-900'>Cybertruck</option>
             </select>
+          </div>
+          <div>
+            <label className={labelClass}>Service Location</label>
+            <input 
+              type="text" 
+              readOnly 
+              className='bg-black/30 border border-zinc-800/50 p-4 rounded-2xl text-zinc-500 outline-none cursor-not-allowed text-sm w-full font-medium tracking-wide' 
+              value={car.location} 
+            />
           </div>
         </div>
 
-         {/* Car Transmission, Fuel Type, Seating Capacity */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6'>
-          <div className='flex flex-col w-full'>
-            <label>Transmission</label>
-            <select onChange={e=> setCar({...car, transmission: e.target.value})} value={car.transmission} className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none'>
-              <option value="">Select a transmission</option>
-              <option value="Automatic">Automatic</option>
-              <option value="Manual">Manual</option>
-              <option value="Semi-Automatic">Semi-Automatic</option>
+        {/* 3. 카테고리, 연식, 좌석 수 */}
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+          <div>
+            <label className={labelClass}>Category</label>
+            <select required className={inputClass} value={car.category} onChange={e => setCar({ ...car, category: e.target.value })}>
+              <option value="" className='bg-zinc-900'>Select</option>
+              <option value="Sedan" className='bg-zinc-900'>Sedan</option>
+              <option value="SUV" className='bg-zinc-900'>SUV</option>
+              <option value="Performance" className='bg-zinc-900'>Performance</option>
             </select>
           </div>
-          <div className='flex flex-col w-full'>
-            <label>Fuel Type</label>
-            <select onChange={e=> setCar({...car, fuel_type: e.target.value})} value={car.fuel_type} className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none'>
-              <option value="">Select a fuel type</option>
-              <option value="Gas">Gas</option>
-              <option value="Diesel">Diesel</option>
-              <option value="Petrol">Petrol</option>
-              <option value="Electric">Electric</option>
-              <option value="Hybrid">Hybrid</option>
-            </select>
+          <div>
+            <label className={labelClass}>Year</label>
+            <input type="number" className={inputClass} value={car.year} onChange={e => setCar({ ...car, year: e.target.value })} />
           </div>
-          <div className='flex flex-col w-full'>
-            <label>Seating Capacity</label>
-            <input type="number" placeholder="4" required className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none' value={car.seating_capacity} onChange={e=> setCar({...car, seating_capacity: e.target.value})}/>
+          <div>
+            <label className={labelClass}>Seating</label>
+            <input type="number" min="2" max="7" className={inputClass} value={car.seating_capacity} onChange={e => setCar({ ...car, seating_capacity: e.target.value })} />
           </div>
         </div>
 
-         {/* Car Location */}
-         <div className='flex flex-col w-full'>
-            <label>Location</label>
-            <select onChange={e=> setCar({...car, location: e.target.value})} value={car.location} className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none'>
-              <option value="">Select a location</option>
-              <option value="New York">New York</option>
-              <option value="Los Angeles">Los Angeles</option>
-              <option value="Houston">Houston</option>
-              <option value="Chicago">Chicago</option>
+        {/* 4. 기술 스펙 (오토파일럿, 주행거리, 가격) */}
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+          <div>
+            <label className={labelClass}>Autopilot Package</label>
+            <select className={inputClass} value={car.autopilot} onChange={e => setCar({ ...car, autopilot: e.target.value })}>
+              <option value="Basic" className='bg-zinc-900'>Basic Autopilot</option>
+              <option value="Enhanced" className='bg-zinc-900'>Enhanced Autopilot</option>
+              <option value="FSD" className='bg-zinc-900'>Full Self-Driving</option>
             </select>
-         </div>
-        {/* Car Description */}
-         <div className='flex flex-col w-full'>
-            <label>Description</label>
-            <textarea rows={5} placeholder="e.g. A luxurious SUV with a spacious interior and a powerful engine." required className='px-3 py-2 mt-1 border border-borderColor rounded-md outline-none' value={car.description} onChange={e=> setCar({...car, description: e.target.value})}></textarea>
           </div>
+          <div>
+            <label className={labelClass}>Range (miles)</label>
+            <input type="number" placeholder="e.g. 330" required className={inputClass} value={car.battery_range} onChange={e => setCar({ ...car, battery_range: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelClass}>Price per Day ({currency})</label>
+            <input type="number" placeholder="e.g. 150" required className={inputClass} value={car.pricePerDay} onChange={e => setCar({ ...car, pricePerDay: e.target.value })} />
+          </div>
+        </div>
 
-        <button className='flex items-center gap-2 px-4 py-2.5 mt-4 bg-primary text-white rounded-md font-medium w-max cursor-pointer'>
-          <img src={assets.tick_icon} alt="" />
-          {isLoading ? 'Listing...' : 'List Your Car'}
-        </button>
+        {/* 5. 상세 설명 */}
+        <div>
+          <label className={labelClass}>Vehicle Notes / Trim Features</label>
+          <textarea 
+            rows={4} 
+            placeholder="e.g. White Interior, Acceleration Boost, 20'' Induction Wheels, etc." 
+            required 
+            className={`${inputClass} resize-none`} 
+            value={car.description} 
+            onChange={e => setCar({ ...car, description: e.target.value })}
+          ></textarea>
+        </div>
 
+        <div className='pt-6'>
+            <button 
+                type="submit"
+                disabled={isLoading} 
+                className='flex items-center justify-center gap-3 px-10 py-5 bg-white text-black rounded-full text-xs font-bold uppercase tracking-widest hover:bg-gray-200 hover:scale-105 transition-all w-full md:w-auto disabled:bg-zinc-800 disabled:text-zinc-500 disabled:hover:scale-100 shadow-[0_0_20px_rgba(255,255,255,0.15)]'
+            >
+            {isLoading ? (
+                <>
+                    <div className='w-4 h-4 border-2 border-zinc-500 border-t-black rounded-full animate-spin'></div>
+                    Listing...
+                </>
+            ) : (
+                <>
+                    <img src={tick_icon} alt="" className='w-3.5 invert' />
+                    List Vehicle
+                </>
+            )}
+            </button>
+        </div>
 
-      </form>
-
-    </div>
+      </motion.form>
+    </motion.div>
   )
 }
 

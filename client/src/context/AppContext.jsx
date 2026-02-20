@@ -1,90 +1,125 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from 'axios'
-import {toast} from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 import { useNavigate } from "react-router-dom";
 
+// 환경 변수에서 기본 URL 설정
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL
 
 export const AppContext = createContext();
 
-export const AppProvider = ({ children })=>{
+export const AppProvider = ({ children }) => {
 
     const navigate = useNavigate()
     const currency = import.meta.env.VITE_CURRENCY
 
-    const [token, setToken] = useState(null)
+    const [token, setToken] = useState(localStorage.getItem('token') || null)
     const [user, setUser] = useState(null)
     const [isOwner, setIsOwner] = useState(false)
     const [showLogin, setShowLogin] = useState(false)
     const [pickupDate, setPickupDate] = useState('')
     const [returnDate, setReturnDate] = useState('')
-
     const [cars, setCars] = useState([])
 
-    // Function to check if user is logged in
-    const fetchUser = async ()=>{
+    // 사용자 데이터 가져오기 (로그인 상태 확인)
+    const fetchUser = async (authToken) => {
         try {
-           const {data} = await axios.get('/api/user/data')
-           if (data.success) {
-            setUser(data.user)
-            setIsOwner(data.user.role === 'owner')
-           }else{
-            navigate('/')
-           }
+            // 헤더에 토큰 직접 설정 (안전성 확보)
+            const { data } = await axios.get('/api/user/data', {
+                headers: { Authorization: authToken }
+            })
+
+            if (data.success) {
+                setUser(data.user)
+                setIsOwner(data.user.role === 'owner')
+            } else {
+                // 토큰이 유효하지 않은 경우 로그아웃 처리
+                logout()
+            }
         } catch (error) {
-            toast.error(error.message)
+            console.error(error)
+            // 401 에러(인증 만료) 등의 경우 로그아웃
+            if (error.response?.status === 401) {
+                logout()
+            }
         }
     }
-    // Function to fetch all cars from the server
 
-    const fetchCars = async () =>{
+    // 차량 목록 가져오기
+    const fetchCars = async () => {
         try {
-            const {data} = await axios.get('/api/user/cars')
-            data.success ? setCars(data.cars) : toast.error(data.message)
+            const { data } = await axios.get('/api/user/cars')
+            if (data.success) {
+                setCars(data.cars)
+            } else {
+                toast.error(data.message)
+            }
         } catch (error) {
-            toast.error(error.message)
+            console.error(error)
         }
     }
 
-    // Function to log out the user
-    const logout = ()=>{
+    // 로그아웃 함수
+    const logout = () => {
         localStorage.removeItem('token')
         setToken(null)
         setUser(null)
         setIsOwner(false)
-        axios.defaults.headers.common['Authorization'] = ''
-        toast.success('You have been logged out')
+        // 공통 헤더 초기화
+        delete axios.defaults.headers.common['Authorization']
+        toast.success('Logged out successfully')
+        navigate('/')
     }
 
-
-    // useEffect to retrieve the token from localStorage
-    useEffect(()=>{
-        const token = localStorage.getItem('token')
-        setToken(token)
+    // 초기 실행: 차량 목록 로드 및 토큰 확인
+    useEffect(() => {
         fetchCars()
-    },[])
-
-    // useEffect to fetch user data when token is available
-    useEffect(()=>{
-        if(token){
-            axios.defaults.headers.common['Authorization'] = `${token}`
-            fetchUser()
+        const storedToken = localStorage.getItem('token')
+        if (storedToken) {
+            setToken(storedToken)
         }
-    },[token])
+    }, [])
+
+    // 토큰이 변경될 때마다 axios 헤더 갱신 및 유저 정보 업데이트
+    useEffect(() => {
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = token
+            fetchUser(token)
+        } else {
+            delete axios.defaults.headers.common['Authorization']
+        }
+    }, [token])
 
     const value = {
-        navigate, currency, axios, user, setUser,
-        token, setToken, isOwner, setIsOwner, fetchUser, showLogin, setShowLogin, logout, fetchCars, cars, setCars, 
-        pickupDate, setPickupDate, returnDate, setReturnDate
+        navigate, 
+        currency, 
+        axios, 
+        user, 
+        setUser,
+        token, 
+        setToken, 
+        isOwner, 
+        setIsOwner, 
+        fetchUser, 
+        showLogin, 
+        setShowLogin, 
+        logout, 
+        fetchCars, 
+        cars, 
+        setCars, 
+        pickupDate, 
+        setPickupDate, 
+        returnDate, 
+        setReturnDate
     }
 
     return (
-    <AppContext.Provider value={value}>
-        { children }
-    </AppContext.Provider>
+        <AppContext.Provider value={value}>
+            {children}
+        </AppContext.Provider>
     )
 }
 
-export const useAppContext = ()=>{
+export const useAppContext = () => {
     return useContext(AppContext)
 }
