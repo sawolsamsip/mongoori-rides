@@ -24,7 +24,7 @@ export const AppProvider = ({ children }) => {
     // 사용자 데이터 가져오기 (로그인 상태 확인)
     const fetchUser = async (authToken) => {
         try {
-            // 헤더에 토큰 직접 설정 (안전성 확보)
+            // 헤더에 토큰이 확실히 들어있는지 재확인
             const { data } = await axios.get('/api/user/data', {
                 headers: { Authorization: authToken }
             })
@@ -33,12 +33,10 @@ export const AppProvider = ({ children }) => {
                 setUser(data.user)
                 setIsOwner(data.user.role === 'owner')
             } else {
-                // 토큰이 유효하지 않은 경우 로그아웃 처리
                 logout()
             }
         } catch (error) {
-            console.error(error)
-            // 401 에러(인증 만료) 등의 경우 로그아웃
+            console.error("Fetch User Error:", error)
             if (error.response?.status === 401) {
                 logout()
             }
@@ -51,11 +49,9 @@ export const AppProvider = ({ children }) => {
             const { data } = await axios.get('/api/user/cars')
             if (data.success) {
                 setCars(data.cars)
-            } else {
-                toast.error(data.message)
             }
         } catch (error) {
-            console.error(error)
+            console.error("Fetch Cars Error:", error)
         }
     }
 
@@ -65,52 +61,35 @@ export const AppProvider = ({ children }) => {
         setToken(null)
         setUser(null)
         setIsOwner(false)
-        // 공통 헤더 초기화
         delete axios.defaults.headers.common['Authorization']
         toast.success('Logged out successfully')
         navigate('/')
     }
 
-    // 초기 실행: 차량 목록 로드 및 토큰 확인
+    // 1. 초기 로드 시 차량 목록만 먼저 가져옴
     useEffect(() => {
         fetchCars()
-        const storedToken = localStorage.getItem('token')
-        if (storedToken) {
-            setToken(storedToken)
-        }
     }, [])
 
-    // 토큰이 변경될 때마다 axios 헤더 갱신 및 유저 정보 업데이트
+    // 2. 토큰 상태 관리 및 Axios 헤더 동기화 (여기가 핵심!)
     useEffect(() => {
-        if (token) {
-            axios.defaults.headers.common['Authorization'] = token
-            fetchUser(token)
+        const storedToken = localStorage.getItem('token');
+        
+        if (storedToken) {
+            setToken(storedToken);
+            // 모든 요청에 토큰이 포함되도록 기본 헤더 설정
+            axios.defaults.headers.common['Authorization'] = storedToken;
+            fetchUser(storedToken);
         } else {
-            delete axios.defaults.headers.common['Authorization']
+            delete axios.defaults.headers.common['Authorization'];
         }
-    }, [token])
+    }, [token]); // 토큰이 바뀔 때마다 실행
 
     const value = {
-        navigate, 
-        currency, 
-        axios, 
-        user, 
-        setUser,
-        token, 
-        setToken, 
-        isOwner, 
-        setIsOwner, 
-        fetchUser, 
-        showLogin, 
-        setShowLogin, 
-        logout, 
-        fetchCars, 
-        cars, 
-        setCars, 
-        pickupDate, 
-        setPickupDate, 
-        returnDate, 
-        setReturnDate
+        navigate, currency, axios, user, setUser,
+        token, setToken, isOwner, setIsOwner, fetchUser, 
+        showLogin, setShowLogin, logout, fetchCars, 
+        cars, setCars, pickupDate, setPickupDate, returnDate, setReturnDate
     }
 
     return (
