@@ -144,12 +144,6 @@ const Login = () => {
             />
           </div>
 
-          {state === 'Login' && (
-            <p className='text-[10px] text-gray-500 hover:text-white cursor-pointer transition-colors text-right uppercase tracking-widest font-bold mt-1'>
-              Forgot Password?
-            </p>
-          )}
-
           <button 
             type="submit" 
             className='w-full bg-white text-black py-4 mt-4 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer'

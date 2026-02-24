@@ -52,8 +52,26 @@ export const ownerMenuLinks = [
     { 
         name: 'Bookings', 
         path: '/owner/manage-bookings', 
-        icon: check_icon, 
-        activeIcon: tick_icon 
+        icon: listIcon, 
+        activeIcon: listIconColored 
+    },
+    { 
+        name: 'Finances', 
+        path: '/owner/finances', 
+        icon: listIcon, 
+        activeIcon: listIconColored 
+    },
+    { 
+        name: 'Incidents', 
+        path: '/owner/incidentals', 
+        icon: listIcon, 
+        activeIcon: listIconColored 
+    },
+    { 
+        name: 'Tesla', 
+        path: '/owner/tesla', 
+        icon: carIcon, 
+        activeIcon: carIconColored 
     },
 ]
 

@@ -5,7 +5,7 @@ import { useAppContext } from '../../context/AppContext';
 import toast from 'react-hot-toast';
 
 const Sidebar = () => {
-    const { user, axios, fetchUser } = useAppContext()
+    const { user, axios, fetchUser, token } = useAppContext()
     const location = useLocation()
     const [image, setImage] = useState(null)
     const [isUploading, setIsUploading] = useState(false)
@@ -24,8 +24,8 @@ const Sidebar = () => {
             formData.append('image', image)
             // 주의: 백엔드 API 경로가 /api/owner/update-image 로 설정되어 있는지 확인 필요
             const { data } = await axios.post('/api/owner/update-image', formData)
-            if (data.success) {
-                fetchUser()
+            if (data.success && token) {
+                await fetchUser(token)
                 toast.success("Profile image updated!")
             } else {
                 toast.error(data.message)

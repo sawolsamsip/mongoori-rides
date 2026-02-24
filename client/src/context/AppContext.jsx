@@ -3,8 +3,9 @@ import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from "react-router-dom";
 
-// 환경 변수에서 기본 URL 설정
-axios.defaults.baseURL = import.meta.env.VITE_BASE_URL
+// 개발 모드: 항상 상대 경로 → Vite가 /api를 localhost:3000으로 프록시
+// 프로덕션: VITE_BASE_URL 사용 (배포 API 주소)
+axios.defaults.baseURL = import.meta.env.DEV ? '' : (import.meta.env.VITE_BASE_URL || '')
 
 export const AppContext = createContext();
 

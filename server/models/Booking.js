@@ -8,7 +8,14 @@ const bookingSchema = new mongoose.Schema({
     pickupDate: {type: Date, required: true},
     returnDate: {type: Date, required: true},
     status: {type: String, enum: ["pending", "confirmed", "cancelled"], default: "pending"},
-    price: {type: Number, required: true}
+    price: {type: Number, required: true},
+    stripeSessionId: { type: String },
+    cancelledAt: { type: Date },
+    billingMode: { type: String, enum: ["daily", "weekly"], default: "daily" },
+    noOfDays: { type: Number },
+    weeks: { type: Number },
+    cardLast4: { type: String },
+    cardBrand: { type: String },
 },{timestamps: true})
 
 const Booking = mongoose.model('Booking', bookingSchema)

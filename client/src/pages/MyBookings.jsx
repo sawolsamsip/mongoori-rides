@@ -9,10 +9,95 @@ import { Link, useNavigate } from 'react-router-dom'
 const MyBookings = () => {
   const { axios, user, token, setShowLogin } = useAppContext()
   const [bookings, setBookings] = useState([])
-  const [loading, setLoading] = useState(true) 
+  const [loading, setLoading] = useState(true)
+  const [downloadingId, setDownloadingId] = useState(null)
+  const [cancellingId, setCancellingId] = useState(null)
+  const [reportModal, setReportModal] = useState(null)
+  const [reportForm, setReportForm] = useState({ type: 'accident', title: 'Incident report', description: '' })
   const navigate = useNavigate()
   
   const currency = import.meta.env.VITE_CURRENCY || '$'
+
+  const handleDownloadInvoice = async (bookingId) => {
+    setDownloadingId(bookingId)
+    try {
+      const auth = token || localStorage.getItem('token')
+      const res = await fetch(`${import.meta.env.DEV ? '' : (import.meta.env.VITE_BASE_URL || '')}/api/invoices/booking/${bookingId}/download`, {
+        method: 'GET',
+        headers: { Authorization: auth || '' },
+        credentials: 'include',
+      })
+      const contentType = res.headers.get('content-type') || ''
+      if (!res.ok) {
+        const msg = contentType.includes('application/json') ? (await res.json()).message : res.statusText
+        throw new Error(msg || 'Invoice not found or unauthorized')
+      }
+      if (!contentType.includes('application/pdf')) {
+        const text = await res.text()
+        try {
+          const j = JSON.parse(text)
+          throw new Error(j.message || 'Download failed')
+        } catch {
+          throw new Error('Download failed')
+        }
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const disp = res.headers.get('Content-Disposition')
+      let suggestedName = `mongoori-invoice-${bookingId}.pdf`
+      if (disp) {
+        const quoted = disp.match(/filename="([^"]+)"/)
+        const unquoted = disp.match(/filename=([^;\s]+)/)
+        if (quoted) suggestedName = quoted[1].trim()
+        else if (unquoted) suggestedName = unquoted[1].trim()
+      }
+      a.download = suggestedName
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Invoice downloaded')
+    } catch (err) {
+      toast.error(err.message || 'Download failed')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
+  const handleReportIncident = async () => {
+    if (!reportModal) return
+    try {
+      const { data } = await axios.post('/api/incidentals/', {
+        bookingId: reportModal._id,
+        type: reportForm.type || 'accident',
+        title: reportForm.title || 'Incident report',
+        description: reportForm.description,
+      })
+      if (data.success) {
+        toast.success('Report submitted. The owner will follow up.')
+        setReportModal(null)
+        setReportForm({ type: 'accident', title: 'Incident report', description: '' })
+      } else toast.error(data.message)
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message)
+    }
+  }
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('Cancel this reservation? This action cannot be undone.')) return
+    setCancellingId(bookingId)
+    try {
+      const { data } = await axios.post('/api/bookings/cancel', { bookingId })
+      if (data.success) {
+        toast.success(data.message || 'Reservation cancelled')
+        fetchMyBookings()
+      } else toast.error(data.message)
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message)
+    } finally {
+      setCancellingId(null)
+    }
+  }
 
   const fetchMyBookings = async () => {
     try {
@@ -89,8 +174,8 @@ const MyBookings = () => {
                 
                 {/* 1. 차량 이미지 & 기본 정보 */}
                 <div className='w-full lg:w-1/4 flex-shrink-0'>
-                  <div className='w-full aspect-video bg-gradient-to-b from-zinc-800 to-black rounded-2xl flex items-center justify-center p-4 mb-4 border border-zinc-800/50'>
-                    <img src={booking.car?.image || assets.main_car} alt="Tesla" className='w-full h-full object-contain drop-shadow-xl'/>
+                  <div className='w-full aspect-video bg-white rounded-2xl flex items-center justify-center p-4 mb-4 overflow-hidden'>
+                    <img src={booking.car?.image || assets.main_car} alt="Tesla" className='w-full h-full object-contain'/>
                   </div>
                   <p className='text-lg font-bold tracking-tight text-white mb-1'>
                     {booking.car?.brand || 'Tesla'} {booking.car?.model}
@@ -137,13 +222,40 @@ const MyBookings = () => {
                   <h1 className='text-3xl md:text-4xl font-black text-white tracking-tighter mb-4'>
                     {currency}{booking.price?.toLocaleString() || '---'}
                   </h1>
-                  <p className='text-[10px] text-gray-600 uppercase tracking-widest font-medium mb-6'>
-                    Booked: {booking.createdAt?.split('T')[0] || 'Recent'}
-                  </p>
-                  {/* 디자인적 요소로 버튼 추가 (기능 연결은 추후 필요시) */}
-                  <button className='w-full bg-white text-black py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]'>
-                      View Receipt
+                  <div className='mb-4'>
+                    <p className='text-[10px] text-gray-600 uppercase tracking-widest font-medium mb-1'>
+                      Booked: {booking.createdAt?.split('T')[0] || 'Recent'}
+                    </p>
+                    {(booking.cardLast4 || booking.cardBrand) && (
+                      <p className='text-[10px] text-gray-500 uppercase tracking-wider'>
+                        Card •••• {booking.cardLast4}{booking.cardBrand ? ` · ${String(booking.cardBrand).charAt(0).toUpperCase() + String(booking.cardBrand).slice(1)}` : ''}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleDownloadInvoice(booking._id)}
+                    disabled={downloadingId === booking._id}
+                    className='w-full bg-white text-black py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)] disabled:opacity-50'
+                  >
+                    {downloadingId === booking._id ? 'Downloading…' : 'Download Invoice'}
                   </button>
+                  {booking.status !== 'cancelled' && (
+                    <>
+                      <button
+                        onClick={() => setReportModal(booking)}
+                        className='w-full mt-3 border border-zinc-600 text-gray-400 py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-800/50 transition-colors'
+                      >
+                        Report incident / damage
+                      </button>
+                      <button
+                        onClick={() => handleCancelBooking(booking._id)}
+                        disabled={cancellingId === booking._id}
+                        className='w-full mt-3 border border-red-500/50 text-red-400 py-3 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-red-500/10 transition-colors disabled:opacity-50'
+                      >
+                        {cancellingId === booking._id ? 'Cancelling…' : 'Cancel Reservation'}
+                      </button>
+                    </>
+                  )}
                 </div>
 
               </motion.div>
@@ -169,6 +281,51 @@ const MyBookings = () => {
           )}
         </div>
       </div>
+
+      {reportModal && (
+        <div className='fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4' onClick={() => setReportModal(null)}>
+          <div className='bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-md w-full shadow-xl text-left' onClick={(e) => e.stopPropagation()}>
+            <h3 className='font-bold text-lg mb-4'>Report incident / damage</h3>
+            <p className='text-gray-400 text-sm mb-4'>Booking: {reportModal.car?.brand} {reportModal.car?.model}</p>
+            <input
+              className='w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-white mb-3'
+              placeholder='Title'
+              value={reportForm.title}
+              onChange={(e) => setReportForm((f) => ({ ...f, title: e.target.value }))}
+            />
+            <select
+              className='w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-white mb-3'
+              value={reportForm.type}
+              onChange={(e) => setReportForm((f) => ({ ...f, type: e.target.value }))}
+            >
+              <option value='accident'>Accident</option>
+              <option value='damage'>Damage</option>
+              <option value='other'>Other</option>
+            </select>
+            <textarea
+              className='w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-white mb-4 resize-none'
+              rows={4}
+              placeholder='Describe what happened…'
+              value={reportForm.description}
+              onChange={(e) => setReportForm((f) => ({ ...f, description: e.target.value }))}
+            />
+            <div className='flex gap-3'>
+              <button
+                onClick={handleReportIncident}
+                className='flex-1 bg-white text-black py-3 rounded-full text-sm font-bold uppercase'
+              >
+                Submit
+              </button>
+              <button
+                onClick={() => setReportModal(null)}
+                className='px-6 py-3 rounded-full border border-zinc-600 text-gray-400 text-sm font-bold uppercase'
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

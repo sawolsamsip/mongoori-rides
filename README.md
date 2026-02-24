@@ -144,24 +144,45 @@ IMAGEKIT_URL_ENDPOINT=
 
 ## ▶️ Run the App
 
-### **Start Backend**
+**404 방지:** 백엔드를 먼저 실행한 뒤 프론트를 띄우고, `client/.env`에 `VITE_BASE_URL`을 **비워두면** Vite가 `/api` 요청을 백엔드로 프록시합니다.
+
+### **1. Start Backend**
 
 ```bash
 cd server
-npm start
+cp .env.example .env   # 필요 시 편집
+npm run server
 ```
 
-### **Start Frontend**
+백엔드: [http://localhost:3000](http://localhost:3000)
+
+### **2. Start Frontend**
 
 ```bash
 cd client
 npm run dev
 ```
 
-Your project will be live at:
+프론트: [http://localhost:5173](http://localhost:5173)
 
-* Frontend: [http://localhost:5173](http://localhost:5173)
-* Backend: [http://localhost:4000](http://localhost:4000)
+### **3. Stripe 결제 테스트 (결제 창이 뜨게 하려면)**
+
+결제 창이 안 뜨면 대부분 **백엔드가 떠 있지 않거나** `/api` 요청이 백엔드로 가지 않는 경우입니다.
+
+1. **백엔드 먼저 실행** (위 1번), **프론트는 `VITE_BASE_URL` 비우고** 실행 (위 2번).
+2. 서버 `.env`에 테스트 키 설정:
+   * `STRIPE_SECRET_KEY=sk_test_...` ([Stripe Dashboard → API Keys](https://dashboard.stripe.com/test/apikeys))
+   * `FRONTEND_URL=http://localhost:5173`
+3. **로컬에서 Stripe 웹훅 받으려면** (결제 완료 후 예약 자동 생성용) 터미널 하나 더 열어서:
+   ```bash
+   stripe listen --forward-to localhost:3000/api/payment/webhook
+   ```
+   실행 후 나오는 **Signing secret** (`whsec_...`)을 복사해 서버 `.env`에 넣기:
+   ```
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   ```
+   (이걸 해두면 결제 완료 시 웹훅으로 예약이 생성됨. CLI 안 켜도 결제 창은 뜨고, 결제 후 리다이렉트 페이지에서 확인 버튼으로 예약 생성 가능.)
+4. 결제 테스트 카드: **4242 4242 4242 4242**, 만료일 미래 아무 날, CVC 아무 3자리.
 
 ---
 

@@ -1,19 +1,27 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import NavbarOwner from '../../components/owner/NavbarOwner'
 import Sidebar from '../../components/owner/Sidebar'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAppContext } from '../../context/AppContext'
 
 const Layout = () => {
-  const { isOwner, token } = useAppContext()
+  const { isOwner, token, user, axios, fetchUser } = useAppContext()
   const navigate = useNavigate()
+  const upgradedRef = useRef(false)
 
   useEffect(() => {
-    // 토큰이 없거나 오너 권한이 없으면 메인 홈으로 돌려보냄
     if (!token) {
       navigate('/')
+      return
     }
-  }, [token, isOwner, navigate])
+    // 오너가 아닌 사용자가 오너 영역에 들어온 경우 한 번만 change-role 호출 후 유저 갱신 (Bookings/Incidents Unauthorized 방지)
+    if (user && user.role !== 'owner' && !upgradedRef.current) {
+      upgradedRef.current = true
+      axios.post('/api/owner/change-role')
+        .then(({ data }) => data.success && fetchUser(token))
+        .catch(() => { upgradedRef.current = false })
+    }
+  }, [token, user, axios, fetchUser, navigate])
 
   return (
     <div className='flex flex-col min-h-screen bg-black text-white font-sans'>

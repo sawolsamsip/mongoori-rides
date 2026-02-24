@@ -66,13 +66,25 @@ export const getUserData = async (req, res) =>{
     }
 }
 
-// Get All Cars for the Frontend
+// Get All Cars for the Frontend (with availability: has active booking = not available for new renters)
 export const getCars = async (req, res) =>{
     try {
-        const cars = await Car.find({isAvaliable: true})
-        res.json({success: true, cars})
+        const cars = await Car.find({ isAvaliable: true }).lean();
+        const Booking = (await import("../models/Booking.js")).default;
+        const now = new Date();
+        const withAvailability = await Promise.all(
+            cars.map(async (car) => {
+                const hasActiveBooking = await Booking.findOne({
+                    car: car._id,
+                    status: { $ne: "cancelled" },
+                    returnDate: { $gte: now },
+                });
+                return { ...car, hasActiveBooking: !!hasActiveBooking };
+            })
+        );
+        res.json({ success: true, cars: withAvailability });
     } catch (error) {
         console.log(error.message);
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message });
     }
 }

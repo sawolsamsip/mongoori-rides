@@ -38,6 +38,21 @@ const ManageBookings = () => {
     }
   }
 
+  const deleteBookingRecord = async (bookingId) => {
+    if (!window.confirm('Delete this booking record permanently? This cannot be undone.')) return
+    try {
+      const { data } = await axios.post('/api/bookings/delete', { bookingId })
+      if (data.success) {
+        toast.success(data.message)
+        fetchOwnerBookings()
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message)
+    }
+  }
+
   useEffect(() => {
     fetchOwnerBookings()
   }, [])
@@ -87,7 +102,7 @@ const ManageBookings = () => {
                             {/* 1. 차량 정보 및 예약 ID */}
                             <td className='px-8 py-6'>
                                 <div className='flex items-center gap-5'>
-                                    <div className='w-20 md:w-28 aspect-video rounded-xl bg-gradient-to-b from-zinc-800/40 to-black flex items-center justify-center overflow-hidden border border-zinc-800/50 flex-shrink-0'>
+                                    <div className='w-20 md:w-28 aspect-video rounded-xl bg-white flex items-center justify-center overflow-hidden flex-shrink-0'>
                                         <img 
                                             src={Array.isArray(booking.car?.image) ? booking.car.image[0] : (booking.car?.image || assets.main_car)} 
                                             alt={booking.car?.model || "Car"} 
@@ -128,10 +143,10 @@ const ManageBookings = () => {
                                 </span>
                             </td>
 
-                            {/* 5. 액션 (승인/거절 Select) */}
+                            {/* 5. 액션 (승인/거절 Select + 삭제) */}
                             <td className='px-8 py-6 text-right'>
-                                {booking.status === 'pending' ? (
-                                    <div className="inline-block relative">
+                                <div className='flex flex-col sm:flex-row items-end gap-2 justify-end'>
+                                    {booking.status === 'pending' ? (
                                         <select 
                                             onChange={e => changeBookingStatus(booking._id, e.target.value)} 
                                             value={booking.status} 
@@ -141,12 +156,19 @@ const ManageBookings = () => {
                                             <option value="confirmed">Confirm ✓</option>
                                             <option value="cancelled">Decline ✕</option>
                                         </select>
-                                    </div>
-                                ) : (
-                                    <span className='text-xs text-gray-500 font-bold uppercase tracking-widest'>
-                                        {booking.status === 'confirmed' ? 'Resolved ✓' : 'Closed ✕'}
-                                    </span>
-                                )}
+                                    ) : (
+                                        <span className='text-xs text-gray-500 font-bold uppercase tracking-widest'>
+                                            {booking.status === 'confirmed' ? 'Resolved ✓' : 'Closed ✕'}
+                                        </span>
+                                    )}
+                                    <button
+                                        type='button'
+                                        onClick={() => deleteBookingRecord(booking._id)}
+                                        className='text-[10px] font-bold uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-500/50 hover:border-red-500 px-4 py-2 rounded-full transition-colors'
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         ))

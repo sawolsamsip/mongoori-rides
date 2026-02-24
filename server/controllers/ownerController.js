@@ -88,6 +88,26 @@ export const toggleCarAvailability = async (req, res) =>{
     }
 }
 
+// API to update car price (Weekly 메인: 주간 가격 입력 시 일일 가격 자동 계산 = weekly/7*1.2)
+export const updateCarPrice = async (req, res) => {
+    try {
+        const { _id } = req.user;
+        const { carId, weeklyPrice } = req.body;
+        const car = await Car.findById(carId);
+        if (!car) return res.json({ success: false, message: "Car not found" });
+        if (car.owner.toString() !== _id.toString()) return res.json({ success: false, message: "Unauthorized" });
+        const weekly = Number(weeklyPrice);
+        if (!Number.isFinite(weekly) || weekly <= 0) return res.json({ success: false, message: "Invalid weekly price" });
+        car.pricePerWeek = Math.round(weekly * 100) / 100; // 입력한 주간 가격 그대로 저장 (750 → 750)
+        car.pricePerDay = Math.round((weekly / 7) * 1.2 * 100) / 100; // 일일은 20% 프리미엄 기준 계산
+        await car.save();
+        res.json({ success: true, message: "Price updated", car: { pricePerDay: car.pricePerDay, pricePerWeek: car.pricePerWeek } });
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 // Api to delete a car
 export const deleteCar = async (req, res) =>{
     try {

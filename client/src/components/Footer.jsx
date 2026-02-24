@@ -25,7 +25,6 @@ const Footer = () => {
             <ul className='space-y-4 text-sm text-gray-400 font-light'>
               <li><Link to='/fleet' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Fleet</Link></li>
               <li><Link to='/my-bookings' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>My Bookings</Link></li>
-              <li><Link to='/owner/dashboard' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Dashboard</Link></li>
               <li><Link to='/our-story' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Our Story</Link></li>
             </ul>
           </div>
@@ -34,7 +33,6 @@ const Footer = () => {
           <div>
             <h4 className='text-xs font-bold tracking-widest uppercase text-white mb-6'>Legal</h4>
             <ul className='space-y-4 text-sm text-gray-400 font-light'>
-              {/* 라우트 경로가 PrivacyPolicy.jsx, TermsOfUse.jsx 등에 맞게 수정 필요 시 경로 확인 요망 */}
               <li><Link to='/privacy-policy' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Privacy Policy</Link></li>
               <li><Link to='/terms-of-use' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Terms of Use</Link></li>
               <li><Link to='/insurance' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Insurance</Link></li>
@@ -52,13 +50,11 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Copyright */}
-        <div className='mt-20 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600 uppercase tracking-wider text-center md:text-left'>
-          <p>&copy; {new Date().getFullYear()} MONGOORI RIDES. DESIGNED IN IRVINE.</p>
-          <div className='flex gap-6'>
-            <Link to='/privacy-policy' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Privacy</Link>
-            <Link to='/terms-of-use' onClick={() => window.scrollTo(0,0)} className='hover:text-white transition-colors'>Terms</Link>
-          </div>
+        {/* Bottom Copyright – 그리드와 시각적으로 이어지도록 여백·라인 정리 */}
+        <div className='mt-16 md:mt-20 pt-6 md:pt-8 text-center'>
+          <p className='text-[11px] text-gray-500 tracking-wide'>
+            &copy; {new Date().getFullYear()} Mongoori Rides. Designed in Irvine.
+          </p>
         </div>
       </div>
     </footer>

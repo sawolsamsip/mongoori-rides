@@ -2,16 +2,31 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import connectDB from "./configs/db.js";
+import { handleStripeWebhook } from "./controllers/paymentController.js";
 import userRouter from "./routes/userRoutes.js";
 import ownerRouter from "./routes/ownerRoutes.js";
 import bookingRouter from "./routes/bookingRoutes.js";
+import paymentRouter from "./routes/paymentRoutes.js";
+import invoiceRouter from "./routes/invoiceRoutes.js";
+import incidentalRouter from "./routes/incidentalRoutes.js";
+import teslaRouter from "./routes/teslaRoutes.js";
 
 // Initialize Express App
 const app = express();
 
-// 🚨 1. CORS 보안 설정 (로컬 주소 + 나중에 배포할 프론트엔드 주소만 허용)
-// .env 파일에 FRONTEND_URL을 추가하게 됩니다.
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'];
+// 🚨 1. CORS 보안 설정
+// - FRONTEND_URL: 기본 프론트엔드 URL (예: http://localhost:5173 또는 http://192.168.1.188:5173)
+// - 필요하면 쉼표로 여러 개도 허용: FRONTEND_URLS=http://localhost:5173,http://192.168.1.188:5173
+const envOrigins = process.env.FRONTEND_URLS
+  ? process.env.FRONTEND_URLS.split(',').map(o => o.trim()).filter(Boolean)
+  : [];
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://192.168.1.188:5173',
+  ...envOrigins,
+].filter(Boolean);
 app.use(cors({
     origin: function (origin, callback) {
         // origin이 없거나(서버 간 통신 등) 허용된 주소일 경우 통과
@@ -24,6 +39,9 @@ app.use(cors({
     credentials: true,
 }));
 
+// Stripe webhook must receive raw body for signature verification (before express.json())
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+
 // Middleware
 app.use(express.json());
 
@@ -32,6 +50,10 @@ app.get('/', (req, res) => res.send("mongoori rides API is running 🚀"))
 app.use('/api/user', userRouter)
 app.use('/api/owner', ownerRouter)
 app.use('/api/bookings', bookingRouter)
+app.use('/api/payment', paymentRouter)
+app.use('/api/invoices', invoiceRouter)
+app.use('/api/incidentals', incidentalRouter)
+app.use('/api/tesla', teslaRouter)
 
 const PORT = process.env.PORT || 3000;
 

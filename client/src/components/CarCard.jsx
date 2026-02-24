@@ -11,9 +11,13 @@ const CarCard = ({ car }) => {
       {/* 1. 이미지 및 뱃지 영역 */}
       <div className='relative w-full h-48 sm:h-56 bg-gradient-to-b from-white to-gray-300 flex justify-center items-center overflow-hidden'>
         
-        {/* AVAILABLE 뱃지 */}
-        <div className='absolute top-4 left-4 bg-black/80 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest z-10'>
-          Available
+        {/* Available / Booked 뱃지 */}
+        <div className={`absolute top-4 left-4 backdrop-blur-md text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest z-10 ${
+          car.hasActiveBooking
+            ? 'bg-red-900/80 border border-red-500/50 text-red-200'
+            : 'bg-black/80 border border-white/20 text-white'
+        }`}>
+          {car.hasActiveBooking ? 'Booked' : 'Available'}
         </div>
         
         {/* 자동차 이미지 */}
@@ -34,8 +38,10 @@ const CarCard = ({ car }) => {
             </p>
           </div>
           <div className='text-right'>
-            <p className='text-xl md:text-2xl font-bold text-white'>${car.pricePerDay || car.price || '150'}</p>
-            <p className='text-[10px] text-gray-500 uppercase tracking-wider'>Per Day</p>
+            <p className='text-xl md:text-2xl font-bold text-white'>
+              ${car.pricePerWeek != null ? (Math.round((car.pricePerWeek / 7) * 100) / 100).toFixed(2) : (car.pricePerDay || car.price || '150')}
+            </p>
+            <p className='text-[10px] text-gray-500 uppercase tracking-wider'>per day (weekly rate)</p>
           </div>
         </div>
 

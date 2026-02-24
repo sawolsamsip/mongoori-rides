@@ -8,7 +8,11 @@ import Home from './pages/Home'
 import Cars from './pages/Cars'
 import CarDetails from './pages/CarDetails'
 import MyBookings from './pages/MyBookings'
-import OurStory from './pages/OurStory' // 🌟 Our Story 컴포넌트 불러오기
+import BookingSuccess from './pages/BookingSuccess'
+import OurStory from './pages/OurStory'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfUse from './pages/TermsOfUse'
+import Insurance from './pages/Insurance'
 
 // 공통 컴포넌트
 import Navbar from './components/Navbar'
@@ -21,6 +25,9 @@ import AddCar from './pages/owner/AddCar'
 import ManageCars from './pages/owner/ManageCars'
 import Dashboard from './pages/owner/Dashboard'
 import ManageBookings from './pages/owner/ManageBookings'
+import Finances from './pages/owner/Finances'
+import Incidentals from './pages/owner/Incidentals'
+import Tesla from './pages/owner/Tesla'
 
 const App = () => {
   const { showLogin } = useAppContext()
@@ -43,7 +50,11 @@ const App = () => {
                   <Route path='/fleet' element={<Cars />} /> 
                   <Route path='/car-details/:id' element={<CarDetails />} />
                   <Route path='/my-bookings' element={<MyBookings />} />
-                  <Route path='/our-story' element={<OurStory />} /> {/* 🌟 경로 연결! */}
+                  <Route path='/booking-success' element={<BookingSuccess />} />
+                  <Route path='/our-story' element={<OurStory />} />
+                  <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+                  <Route path='/terms-of-use' element={<TermsOfUse />} />
+                  <Route path='/insurance' element={<Insurance />} />
                 </Routes>
               </div>
               <Footer />
@@ -57,6 +68,9 @@ const App = () => {
           <Route path='add-car' element={<AddCar />} />
           <Route path='manage-cars' element={<ManageCars />} />
           <Route path='manage-bookings' element={<ManageBookings />} />
+          <Route path='finances' element={<Finances />} />
+          <Route path='incidentals' element={<Incidentals />} />
+          <Route path='tesla' element={<Tesla />} />
         </Route>
       </Routes>
     </div>

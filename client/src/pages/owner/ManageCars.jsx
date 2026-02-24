@@ -5,14 +5,19 @@ import delete_icon from '../../assets/delete_icon.svg'
 import upload_icon from '../../assets/upload_icon.svg' 
 
 import { useAppContext } from '../../context/AppContext'
+import { assets } from '../../assets/assets'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 
+// Weekly 메인: DB는 pricePerDay, 화면에는 주간 가격 표시. weekly = (pricePerDay*7)/1.2
+const weeklyFromDaily = (pricePerDay) => Math.round(((pricePerDay || 0) * 7) / 1.2 * 100) / 100
+
 const ManageCars = () => {
-  const { isOwner, axios, currency } = useAppContext()
+  const { axios, currency } = useAppContext()
   const [cars, setCars] = useState([])
   const [loading, setLoading] = useState(true)
+  const [editingCar, setEditingCar] = useState(null) // { _id, weeklyPrice }
   const navigate = useNavigate()
 
   const fetchOwnerCars = async () => {
@@ -56,9 +61,45 @@ const ManageCars = () => {
     }
   }
 
+  const openEditPrice = (car) => {
+    setEditingCar({ _id: car._id, model: car.model, weeklyPrice: car.pricePerWeek ?? weeklyFromDaily(car.pricePerDay) })
+  }
+
+  const saveCarPrice = async () => {
+    if (!editingCar || !editingCar.weeklyPrice || editingCar.weeklyPrice <= 0) {
+      toast.error('Enter a valid weekly price')
+      return
+    }
+    try {
+      const { data } = await axios.post('/api/owner/update-car-price', { carId: editingCar._id, weeklyPrice: editingCar.weeklyPrice })
+      if (data.success) {
+        toast.success(data.message)
+        setEditingCar(null)
+        fetchOwnerCars()
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message)
+    }
+  }
+
   useEffect(() => {
-    if (isOwner) fetchOwnerCars()
-  }, [isOwner])
+    let cancelled = false
+    const timeout = setTimeout(() => {
+      if (!cancelled) setLoading(false)
+    }, 10000)
+    fetchOwnerCars().finally(() => {
+      if (!cancelled) {
+        clearTimeout(timeout)
+        setLoading(false)
+      }
+    })
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+    }
+  }, [])
 
   if (loading) {
     return <div className='flex-1 flex justify-center items-center min-h-[50vh]'><div className='w-8 h-8 border-4 border-zinc-700 border-t-white rounded-full animate-spin'></div></div>
@@ -90,7 +131,7 @@ const ManageCars = () => {
                             <tr className='bg-black/40 border-b border-zinc-800 text-[10px] uppercase tracking-[0.2em] text-gray-500'>
                                 <th className="px-8 py-6 font-bold">Vehicle Info</th>
                                 <th className="px-6 py-6 font-bold hidden md:table-cell">Category</th>
-                                <th className="px-6 py-6 font-bold">Price / Day</th>
+                                <th className="px-6 py-6 font-bold">Price / Week</th>
                                 <th className="px-6 py-6 font-bold hidden lg:table-cell">Status</th>
                                 <th className="px-8 py-6 font-bold text-right">Actions</th>
                             </tr>
@@ -100,7 +141,7 @@ const ManageCars = () => {
                                 <tr key={index} className='hover:bg-zinc-800/20 transition-colors group'>
                                     <td className='px-8 py-6'>
                                         <div className='flex items-center gap-5'>
-                                            <div className='w-20 md:w-28 aspect-video rounded-xl bg-zinc-800/40 flex items-center justify-center overflow-hidden border border-zinc-800/50'>
+                                            <div className='w-20 md:w-28 aspect-video rounded-2xl bg-white flex items-center justify-center overflow-hidden'>
                                                 <img src={Array.isArray(car.image) ? car.image[0] : (car.image || upload_icon)} alt={car.model} className="h-full w-full object-contain p-2 group-hover:scale-110 transition-transform" />
                                             </div>
                                             <div>
@@ -110,19 +151,25 @@ const ManageCars = () => {
                                         </div>
                                     </td>
                                     <td className='px-6 py-6 hidden md:table-cell'><span className='text-gray-300 font-medium'>{car.category || 'N/A'}</span></td>
-                                    <td className='px-6 py-6'><span className='text-lg font-black'>{currency}{car.pricePerDay}</span></td>
+                                    <td className='px-6 py-6'>
+                                        <span className='text-lg font-black'>{currency}{car.pricePerWeek ?? weeklyFromDaily(car.pricePerDay)}</span>
+                                        <span className='text-[10px] text-gray-500 ml-1'>/ week</span>
+                                        <button type='button' onClick={() => openEditPrice(car)} className='ml-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white border border-zinc-600 hover:border-zinc-500 px-2 py-1 rounded-lg transition-colors'>Edit</button>
+                                    </td>
                                     <td className='px-6 py-6 hidden lg:table-cell'>
                                         <span className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold border ${car.isAvaliable ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800' : 'bg-amber-900/30 text-amber-400 border-amber-800'}`}>
                                             {car.isAvaliable ? "Available" : "Hidden"}
                                         </span>
                                     </td>
                                     <td className='px-8 py-6'>
-                                        <div className='flex justify-end gap-2'>
-                                            <button onClick={() => toggleAvailability(car._id)} className='p-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors group/btn'>
-                                                <img src={car.isAvaliable ? eye_close_icon : eye_icon} className={`w-4 h-4 opacity-70 group-hover/btn:opacity-100 ${car.isAvaliable ? '' : 'invert'}`} alt="toggle" />
+                                        <div className='flex justify-end gap-2 flex-wrap'>
+                                            <button onClick={() => toggleAvailability(car._id)} className='flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors text-xs font-bold uppercase tracking-wider text-gray-300 hover:text-white' title={car.isAvaliable ? 'Hide from fleet' : 'Show on fleet'}>
+                                                <img src={car.isAvaliable ? eye_close_icon : eye_icon} className={`w-4 h-4 ${car.isAvaliable ? '' : 'invert'}`} alt="" />
+                                                <span>{car.isAvaliable ? 'Hide' : 'Show'}</span>
                                             </button>
-                                            <button onClick={() => deleteCar(car._id)} className='p-3 rounded-xl bg-red-900/20 hover:bg-red-900/50 border border-transparent hover:border-red-800 transition-colors group/btn'>
-                                                <img src={delete_icon} className='w-4 h-4 opacity-70 group-hover/btn:opacity-100 invert' alt="delete" />
+                                            <button onClick={() => deleteCar(car._id)} className='flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-900/20 hover:bg-red-900/50 border border-red-800/50 text-red-400 hover:text-red-300 transition-colors text-xs font-bold uppercase tracking-wider' title='Remove from fleet'>
+                                                <img src={delete_icon} className='w-4 h-4 invert' alt="" />
+                                                <span>Remove</span>
                                             </button>
                                         </div>
                                     </td>
@@ -147,6 +194,32 @@ const ManageCars = () => {
                 </div>
             )}
         </motion.div>
+
+        {/* Edit Price Modal (Weekly 메인) */}
+        {editingCar && (
+          <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm' onClick={() => setEditingCar(null)}>
+            <div className='bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-md w-full shadow-2xl' onClick={e => e.stopPropagation()}>
+              <h3 className='text-lg font-bold text-white mb-2'>Edit price · {editingCar.model}</h3>
+              <p className='text-[10px] text-gray-500 uppercase tracking-widest mb-4'>Weekly price (daily is auto-calculated with 20% premium)</p>
+              <div className='flex items-center gap-2 mb-6'>
+                <span className='text-gray-400'>{currency}</span>
+                <input
+                  type='number'
+                  min='1'
+                  step='1'
+                  value={editingCar.weeklyPrice}
+                  onChange={e => setEditingCar({ ...editingCar, weeklyPrice: parseFloat(e.target.value) || 0 })}
+                  className='flex-1 bg-zinc-800 border border-zinc-600 text-white px-4 py-3 rounded-xl outline-none focus:border-white'
+                />
+                <span className='text-gray-500 text-sm'>/ week</span>
+              </div>
+              <div className='flex gap-3'>
+                <button type='button' onClick={() => setEditingCar(null)} className='flex-1 py-3 rounded-xl border border-zinc-600 text-gray-300 hover:bg-zinc-800 transition-colors font-bold text-xs uppercase tracking-widest'>Cancel</button>
+                <button type='button' onClick={saveCarPrice} className='flex-1 py-3 rounded-xl bg-white text-black hover:bg-gray-200 font-bold text-xs uppercase tracking-widest transition-colors'>Save</button>
+              </div>
+            </div>
+          </div>
+        )}
     </motion.div>
   )
 }

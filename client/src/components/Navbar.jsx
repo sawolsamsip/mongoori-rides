@@ -9,7 +9,7 @@ const Navbar = () => {
   const navigate = useNavigate()
   
   // AppContext에서 로그인 관련 상태 가져오기
-  const { setShowLogin, token, setToken, setUser } = useAppContext()
+  const { setShowLogin, token, setToken, setUser, user } = useAppContext()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,7 +48,6 @@ const Navbar = () => {
           <NavLink to='/' className={({isActive}) => isActive ? 'text-white' : 'hover:text-white transition-colors'}>Home</NavLink>
           <NavLink to='/fleet' className={({isActive}) => isActive ? 'text-white' : 'hover:text-white transition-colors'}>Fleet</NavLink>
           <NavLink to='/my-bookings' className={({isActive}) => isActive ? 'text-white' : 'hover:text-white transition-colors'}>Bookings</NavLink>
-          <NavLink to='/our-story' className={({isActive}) => isActive ? 'text-white' : 'hover:text-white transition-colors'}>Our Story</NavLink>
         </ul>
 
         {/* 3. Right Side Buttons */}
@@ -62,11 +61,11 @@ const Navbar = () => {
 
           {token ? (
             <div className='relative group cursor-pointer'>
-              <img src={assets.user_profile} alt="Profile" className='w-10 h-10 rounded-full border border-zinc-700 object-cover' />
+              <img src={user?.image || assets.user_profile} alt="Profile" className='w-10 h-10 rounded-full border border-zinc-700 object-cover' />
               <div className='absolute right-0 top-full pt-4 hidden group-hover:block'>
                 <div className='bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-2xl shadow-2xl flex flex-col min-w-[160px] overflow-hidden'>
-                  <p onClick={() => navigate('/my-bookings')} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-gray-300 hover:text-white transition-colors'>My Trips</p>
-                  <p onClick={logout} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-red-400 hover:text-red-300 transition-colors'>Sign Out</p>
+                  <p onClick={() => navigate('/owner/dashboard')} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-gray-300 hover:text-white transition-colors'>Dashboard</p>
+                  <p onClick={logout} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-red-400 hover:text-red-300 transition-colors'>Logout</p>
                 </div>
               </div>
             </div>
@@ -97,7 +96,6 @@ const Navbar = () => {
           <NavLink to='/' onClick={() => setShowMenu(false)} className={({isActive}) => isActive ? 'text-white font-medium' : 'hover:text-white'}>Home</NavLink>
           <NavLink to='/fleet' onClick={() => setShowMenu(false)} className={({isActive}) => isActive ? 'text-white font-medium' : 'hover:text-white'}>Fleet</NavLink>
           <NavLink to='/my-bookings' onClick={() => setShowMenu(false)} className={({isActive}) => isActive ? 'text-white font-medium' : 'hover:text-white'}>Bookings</NavLink>
-          <NavLink to='/our-story' onClick={() => setShowMenu(false)} className={({isActive}) => isActive ? 'text-white font-medium' : 'hover:text-white'}>Our Story</NavLink>
           
           <div className='h-[1px] bg-zinc-800/50 my-4'></div>
           

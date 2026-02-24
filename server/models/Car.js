@@ -15,9 +15,11 @@ const carSchema = new mongoose.Schema({
     battery_range: { type: Number, required: true },
 
     pricePerDay: { type: Number, required: true },
+    pricePerWeek: { type: Number }, // Weekly 메인: 저장값 그대로 표시 (750 입력 시 750으로 표시)
     location: { type: String, required: true },
     description: { type: String, required: true },
-    isAvaliable: {type: Boolean, default: true}
+    isAvaliable: {type: Boolean, default: true},
+    teslaVehicleId: { type: String },
 },{timestamps: true})
 
 const Car = mongoose.model('Car', carSchema)

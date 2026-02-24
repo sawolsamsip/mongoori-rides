@@ -34,9 +34,17 @@ const Dashboard = () => {
         }
     }
 
-    useEffect(() => { 
-        if (isOwner) fetchDashboardData() 
-    }, [isOwner])
+    useEffect(() => {
+        let cancelled = false
+        const timeout = setTimeout(() => { if (!cancelled) setLoading(false) }, 10000)
+        fetchDashboardData().finally(() => {
+            if (!cancelled) {
+                clearTimeout(timeout)
+                setLoading(false)
+            }
+        })
+        return () => { cancelled = true; clearTimeout(timeout) }
+    }, [])
 
     const dashboardCards = [
         { title: "Monthly Revenue", value: `${currency}${data.monthlyRevenue?.toLocaleString() || 0}`, icon: assets.dashboardIconColored },

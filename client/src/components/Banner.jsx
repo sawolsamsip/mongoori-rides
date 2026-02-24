@@ -27,7 +27,7 @@ const Banner = () => {
             Turn your parked Tesla into a high-earning asset. Join Irvine's premier car-sharing community and start earning with zero hassle. Elevate the Orange County lifestyle.
           </p>
           <button 
-            onClick={() => navigate('/add-car')} 
+            onClick={() => navigate('/owner/dashboard')} 
             className='bg-white text-black px-10 md:px-12 py-4 rounded-full font-bold text-sm uppercase hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] w-full sm:w-auto'
           >
             Become a Host

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 const Insurance = () => {
@@ -20,7 +21,7 @@ const Insurance = () => {
   return (
     <motion.div 
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className='px-6 md:px-32 lg:px-64 py-16 text-gray-400 bg-black min-h-screen font-light'
+      className='px-6 md:px-32 lg:px-64 pt-28 pb-16 text-gray-400 bg-black min-h-screen font-light'
     >
       <h1 className='text-3xl font-black text-white mb-3 uppercase tracking-tighter'>Insurance <span className='text-gray-600'>Coverage</span></h1>
       <div className='h-0.5 w-16 bg-white mb-10'></div>
@@ -39,6 +40,11 @@ const Insurance = () => {
             </ul>
           </div>
         ))}
+      </div>
+      <div className='mt-12 text-center'>
+        <Link to='/fleet' className='inline-block bg-white text-black px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors'>
+          Book with confidence
+        </Link>
       </div>
     </motion.div>
   )

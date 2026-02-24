@@ -34,7 +34,7 @@ const TermsOfUse = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className='px-6 md:px-32 lg:px-64 py-16 text-gray-400 bg-black min-h-screen font-light'
+      className='px-6 md:px-32 lg:px-64 pt-28 pb-16 text-gray-400 bg-black min-h-screen font-light'
     >
       <div className='mb-12'>
         <h1 className='text-3xl font-black text-white mb-3 tracking-tighter uppercase'>
