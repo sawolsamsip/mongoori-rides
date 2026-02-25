@@ -4,10 +4,59 @@ Coolify로 **백엔드(API)** 와 **프론트엔드(웹)** 를 같은 저장소�
 
 ---
 
-## 전제
+## 0. 로컬 서버에 Coolify 설치 (예: 192.168.1.188)
 
-- Coolify가 이미 **VPS/서버**에 설치되어 있고, 도메인(또는 IP)으로 접속 가능하다고 가정합니다.
-- 같은 GitHub 저장소(`mongoori-rides`)에서 **리소스를 두 개** 만듭니다. (백엔드 1개, 프론트 1개)
+서버에 DUMB(미디어 서버), gala-node, npm 등이 이미 있어도 Coolify를 같이 쓸 수 있습니다. Coolify는 **포트 8000**으로 웹 UI를 띄우고, 앱들은 Docker 컨테이너로 격리됩니다.
+
+### 0-1. 서버 접속
+
+```bash
+ssh 사용자명@192.168.1.188
+```
+
+(실제 사용자명으로 바꾸세요. root이면 `ssh root@192.168.1.188`)
+
+### 0-2. 포트 8000 확인
+
+다른 서비스가 8000을 쓰면 충돌합니다. 확인:
+
+```bash
+sudo ss -tuln | grep 8000
+# 또는
+sudo netstat -tuln | grep 8000
+```
+
+아무것도 안 나오면 8000 사용 가능합니다. DUMB·gala-node는 보통 다른 포트를 쓰므로 그대로 두면 됩니다.
+
+### 0-3. Coolify 설치 실행
+
+**방법 A – 한 줄로 실행 (추천)**
+
+```bash
+curl -fsSL https://cdn.coollabs.io/coolify/install.sh | sudo bash
+```
+
+**방법 B – 저장소 스크립트 사용**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sawolsamsip/mongoori-rides/main/scripts/coolify-install-on-server.sh | sudo bash
+```
+
+스크립트가 Docker(24+)가 없으면 설치하고, Coolify를 `/data/coolify` 등에 설치합니다. 기존 Docker가 있어도 보통 함께 동작합니다.
+
+### 0-4. 첫 접속 및 관리자 계정
+
+1. 같은 네트워크의 PC/맥 브라우저에서 **http://192.168.1.188:8000** 접속.
+2. 처음 한 번 **관리자 계정** 생성 (이메일, 비밀번호 등).
+3. 로그인하면 Coolify 대시보드가 보입니다.
+
+이제 아래 1~3단계대로 **mongoori-rides** 백엔드·프론트를 Coolify에 추가하면 됩니다.
+
+**로컬 IP만 쓸 때 (도메인 없음)**  
+- Coolify에서 백엔드/프론트에 **도메인** 대신 **192.168.1.188**와 포트(예: 3001, 3002) 또는 Coolify가 부여한 URL을 쓰면 됩니다.  
+- `FRONTEND_URL` = `http://192.168.1.188:프론트포트`  
+- `VITE_BASE_URL` = `http://192.168.1.188:백엔드포트`  
+- 같은 공유기 안에서만 접속 가능합니다. 외부 접속이 필요하면 나중에 도메인·리버스 프록시를 붙이면 됩니다.
 
 ---
 

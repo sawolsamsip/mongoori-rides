@@ -25,6 +25,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://192.168.1.188:5173',
+  'https://rides.mongoori.com',
+  'http://rides.mongoori.com',
   ...envOrigins,
 ].filter(Boolean);
 app.use(cors({
