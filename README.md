@@ -80,12 +80,13 @@ mongoori-rides/
 │   └── package.json
 │
 ├── docs/
-│   └── ROLES_AND_TESLA.md   # 역할(운전자/차량주인/운영자), Tesla Fleet·Partner·Telemetry 안내
+│   ├── TESLA_API.md         # Tesla Fleet API: env, OAuth, 우리 API, Tesla 엔드포인트, 리전 등록
+│   └── ROLES_AND_TESLA.md   # 역할(운전자/차량주인/운영자), Partner·Telemetry 정책
 ├── DEPLOY.md                # Coolify 배포 가이드
 └── README.md
 ```
 
-**문서 요약**: `README.md`(개요·환경변수·구조), `DEPLOY.md`(배포), `docs/ROLES_AND_TESLA.md`(역할·Tesla API), `server/.env.example`·`client/.env.example`(환경 변수 예시).
+**문서 요약**: `README.md`(개요·환경변수·구조), `DEPLOY.md`(배포), **`docs/TESLA_API.md`**(Tesla API 상세), `docs/ROLES_AND_TESLA.md`(역할·Tesla 정책), `server/.env.example`·`client/.env.example`(환경 변수 예시).
 
 ---
 
@@ -199,7 +200,7 @@ Runs at [http://localhost:5173](http://localhost:5173).
 
 ## Version & GitHub
 
-- **현재 버전**: **1.0.0** (루트 `package.json`, `client/package.json`, `server/package.json` 동일).
+- **현재 버전**: **1.0.1** (루트 `package.json`, `client/package.json`, `server/package.json` 동일).
 - **GitHub에 올리기**:
   1. GitHub에서 새 저장소 생성 (예: `mongoori-rides`), README/ .gitignore 추가하지 않음.
   2. 로컬에서:

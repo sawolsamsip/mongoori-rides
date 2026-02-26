@@ -1,5 +1,9 @@
 # Roles & Tesla API Guide
 
+**Tesla Fleet API 상세**(환경 변수, OAuth, 엔드포인트, 리전 등록)는 **`docs/TESLA_API.md`** 를 참고하세요.
+
+---
+
 ## 1. Role 구분 (운전자 / 차량주인 / 운영자)
 
 ### 현재 구현된 역할
