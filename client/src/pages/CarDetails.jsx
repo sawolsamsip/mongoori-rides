@@ -132,7 +132,7 @@ const CarDetails = () => {
     }
 
     if (availableForSelectedDates === false) {
-      toast.error("This vehicle is not available for the selected dates. Please choose different dates.");
+      toast.error("This vehicle is already booked for the selected period and cannot be rented.");
       return;
     }
 
@@ -189,6 +189,27 @@ const CarDetails = () => {
     return () => { cancelled = true }
   }, [id, pickupDate, returnDate, billingMode, numberOfWeeks, axios])
 
+  const displayTitle = car
+    ? (() => {
+        if (car.teslaModelType) return `Tesla Model ${car.teslaModelType}`
+        if (car.teslaVehicleId && car.model) {
+          const m = String(car.model).toLowerCase()
+          if (m.includes('model y') || m.includes('modely')) return 'Tesla Model Y'
+          if (m.includes('model 3') || m.includes('model3')) return 'Tesla Model 3'
+          return 'Tesla Model 3'
+        }
+        const base = `${car.brand || 'Tesla'} ${car.model || ''}`.trim()
+        return base.replace(/\s*\([A-HJ-NPR-Z0-9]{6,7}\)\s*$/i, '').trim() || base
+      })()
+    : ''
+  const inferredModelType = car?.teslaVehicleId && car?.model && !car?.teslaModelType
+    ? (String(car.model).toLowerCase().includes('model y') || String(car.model).toLowerCase().includes('modely') ? 'Y' : '3')
+    : car?.teslaModelType
+  const detailImage = car
+    ? (car.teslaVehicleId ? (inferredModelType === 'Y' ? assets.tesla_model_y : assets.tesla_model_3) : (car.image || assets.main_car))
+    : assets.main_car
+  const guestFriendlyDescription = car?.description && !String(car.description).toLowerCase().includes('imported from tesla') && !String(car.description).toLowerCase().includes('edit price')
+
   return car ? (
     <div className='bg-black min-h-screen pt-32 pb-24 px-6 md:px-16 lg:px-24 xl:px-32 text-white'>
       
@@ -206,25 +227,32 @@ const CarDetails = () => {
                 initial={{ scale: 0.95, opacity: 0 }} 
                 animate={{ scale: 1, opacity: 1 }} 
                 transition={{ delay: 0.2, duration: 0.8 }} 
-                src={car.image || assets.main_car} 
-                alt={car.model} 
+                src={detailImage} 
+                alt={displayTitle} 
                 className='w-full h-full object-contain' 
               />
           </div>
           
           <div className='space-y-10'>
-            <div>
-              <h1 className='text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter mb-2'>{car.brand || 'Tesla'} {car.model}</h1>
+            <div className='space-y-3'>
+              <h1 className='text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter mb-2'>
+                {displayTitle}
+              </h1>
               <p className='text-gray-400 text-lg uppercase tracking-widest font-light'>
                 {car.category || 'Luxury'} • <span className='text-white font-medium'>{car.year || '2026'}</span>
+                {car.teslaVehicleId && (
+                  <span className='ml-3 text-[10px] font-semibold px-2 py-1 rounded-full bg-emerald-400/10 text-emerald-300 border border-emerald-500/40'>
+                    TESLA CONNECTED
+                  </span>
+                )}
               </p>
             </div>
 
             <div className='grid grid-cols-2 sm:grid-cols-4 gap-4'>
               {[
-                { icon: assets.users_icon, text: `${car.seats || car.seating_capacity || '5'} Seats` },
-                { icon: assets.fuel_icon, text: `${car.battery_range || 'Long'} Range` },
-                { icon: assets.carIcon, text: car.autopilot || 'Autopilot' }, 
+                { icon: assets.users_icon, text: `${car.seats ?? car.seating_capacity ?? '5'} Seats` },
+                { icon: assets.fuel_icon, text: car.battery_range ? `${car.battery_range} mi range` : 'Long range' },
+                { icon: assets.carIcon, text: car.trim || car.autopilot || 'Autopilot' }, 
                 { icon: assets.location_icon, text: car.location || 'Irvine, CA' },
               ].map(({ icon, text }, index) => (
                 <div key={index} className='flex flex-col items-center justify-center bg-zinc-900/30 border border-zinc-800 p-6 rounded-2xl hover:border-gray-500 transition-all'>
@@ -240,17 +268,16 @@ const CarDetails = () => {
               
               {/* 고정 마케팅 카피 (항상 노출되어 풍성해 보이게 함) */}
               <p className='text-gray-400 leading-relaxed text-lg font-light mb-8'>
-                Elevate your Orange County lifestyle with this premium {car.brand || 'Tesla'} {car.model}. 
+                Elevate your Orange County lifestyle with this premium {displayTitle}. 
                 Whether you're cruising down PCH or heading to a business meeting in Irvine, 
                 experience the perfect blend of sustainable energy, cutting-edge technology, and minimalist luxury.
               </p>
 
-              {/* DB에서 불러온 실제 짧은 설명(White/Black 등)을 예쁜 박스에 담음 */}
-              {car.description && (
+              {guestFriendlyDescription && (car.trim || car.description) && (
                 <div className='bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 lg:p-8'>
-                  <h3 className='text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-3'>Vehicle Notes / Trim</h3>
+                  <h3 className='text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-3'>Trim</h3>
                   <p className='text-white font-medium whitespace-pre-line text-lg'>
-                    {car.description}
+                    {car.trim || car.description}
                   </p>
                 </div>
               )}
@@ -314,7 +341,7 @@ const CarDetails = () => {
                     ? ' (billed per week)'
                     : ' (billed per day)'}
                   {billingMode === 'daily' && daysForPeriod != null && (
-                    <> · 총 {daysForPeriod}일 합계</>
+                    <> · total for {daysForPeriod} day{daysForPeriod !== 1 ? 's' : ''}</>
                   )}
                 </p>
               )}
@@ -375,7 +402,7 @@ const CarDetails = () => {
             
             {availableForSelectedDates === false && (
               <p className='text-red-400 text-sm font-medium mb-2'>
-                This vehicle is booked for part of this period. Please select different dates.
+                This vehicle is already booked for the selected period and cannot be rented.
               </p>
             )}
             <button 

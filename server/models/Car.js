@@ -20,6 +20,10 @@ const carSchema = new mongoose.Schema({
     description: { type: String, required: true },
     isAvaliable: {type: Boolean, default: true},
     teslaVehicleId: { type: String },
+    /** Tesla model line for display and image: '3' | 'Y' */
+    teslaModelType: { type: String },
+    /** Trim from Tesla (e.g. Long Range, Performance) for guest-facing display */
+    trim: { type: String },
 },{timestamps: true})
 
 const Car = mongoose.model('Car', carSchema)

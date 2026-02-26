@@ -3,6 +3,9 @@ import logo from './logo.svg'
 import tesla_video from './tesla-video.mp4'
 import main_car from './main_car.png'
 import user_profile from './user_profile.png' // 🌟 프로필 이미지 추가
+// Tesla model-specific images (replace tesla_model_y with Model Y asset when available)
+const tesla_model_3 = main_car
+const tesla_model_y = main_car
 
 // 메뉴 및 액션 아이콘
 import addIcon from './addIcon.svg'
@@ -39,7 +42,7 @@ export const ownerMenuLinks = [
     },
     { 
         name: 'Add Car', 
-        path: '/owner/add-car', 
+        path: '/owner/tesla', 
         icon: addIcon, 
         activeIcon: addIconColored 
     },
@@ -67,12 +70,6 @@ export const ownerMenuLinks = [
         icon: listIcon, 
         activeIcon: listIconColored 
     },
-    { 
-        name: 'Tesla', 
-        path: '/owner/tesla', 
-        icon: carIcon, 
-        activeIcon: carIconColored 
-    },
 ]
 
 // 전체 에셋 객체 내보내기
@@ -80,6 +77,8 @@ export const assets = {
     logo,
     tesla_video,
     main_car,
+    tesla_model_3,
+    tesla_model_y,
     user_profile, // 🌟 여기서도 내보내기!
     addIcon,
     addIconColored,

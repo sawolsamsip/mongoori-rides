@@ -4,6 +4,18 @@ Coolify로 **백엔드(API)** 와 **프론트엔드(웹)** 를 같은 저장소�
 
 ---
 
+## 로컬 + 배포 둘 다 쓰기 (한 번에 요약)
+
+| 단계 | 할 일 | 누가? |
+|------|--------|--------|
+| **로컬** | `client/.env` 에 `VITE_BASE_URL=` **(비움)** 유지 | ✅ 이미 적용됨 (저장소에 반영) |
+| **GitHub** | `client/.env` 커밋하지 않음 | ✅ `.gitignore`에 `client/.env` 있음 → push 시 제외됨 |
+| **Coolify** | 프론트 앱 **Environment Variables** 에 `VITE_BASE_URL` = `https://api.mongoori.com` 넣고 **재빌드** | 👤 Coolify 웹에서 직접 한 번 설정 |
+
+로컬에서는 `npm run dev` 시 API·Tesla OAuth 모두 `localhost:3000` 사용. 배포 후에는 Coolify에 넣은 `VITE_BASE_URL` 로 외부 접속 가능.
+
+---
+
 ## 0. 로컬 서버에 Coolify 설치 (예: 192.168.1.188)
 
 서버에 DUMB(미디어 서버), gala-node, npm 등이 이미 있어도 Coolify를 같이 쓸 수 있습니다. Coolify는 **포트 8000**으로 웹 UI를 띄우고, 앱들은 Docker 컨테이너로 격리됩니다.
@@ -60,6 +72,51 @@ curl -fsSL https://raw.githubusercontent.com/sawolsamsip/mongoori-rides/main/scr
 
 ---
 
+## 0-5. 엔드포인트(서버)와 도메인 설정 (192.168.1.88, 포트 8000)
+
+Coolify를 **192.168.1.88**에 설치했고 UI가 **포트 8000**으로 떠 있다면, 아래 순서로 “어디에 배포할지”와 “어떤 주소로 접속할지”를 설정한 뒤 Deploy 하면 됩니다.
+
+### 1) 엔드포인트 = 서버(Server)
+
+- 배포 대상 머신을 Coolify에서는 **Server** 한 개로 등록해서 씁니다.
+- **같은 머신(192.168.1.88)**에 Coolify를 설치했다면, 설치 시 그 머신이 **로컬 서버**로 이미 들어가 있는 경우가 많습니다.
+- **확인**: 왼쪽 메뉴 **Servers** → 서버 한 개 보이면 OK (이게 엔드포인트입니다). 없으면 **+ Add Server** → **Local** 또는 해당 머신(192.168.1.88)으로 추가합니다.
+
+### 2) 배포 위치 = Destination
+
+- 앱은 “서버 위의 Docker 네트워크”인 **Destination**에 배포됩니다.
+- **확인**: **Destinations** 메뉴에 최소 1개 있으면 됩니다. 없으면 **Destinations** → **+ Add** → **Server**에 위 서버 선택 → **Network Name** 입력 후 저장합니다.
+- Application 만들 때 **Destination**을 이걸로 선택하면 192.168.1.88 위에 배포됩니다.
+
+### 3) 도메인(FQDN) – 로컬 IP만 쓸 때
+
+도메인 없이 **192.168.1.88**로만 접속하려면:
+
+**방식 A – 포트 매핑 (추천)**  
+- Application 설정에서 **Port Exposes**: 백엔드는 `3000`, 프론트(정적 Nginx)는 `80`.
+- **Port Mappings**에 `호스트포트:컨테이너포트` 지정.  
+  - 백엔드: `3001:3000` → 접속 주소 **http://192.168.1.88:3001**  
+  - 프론트: `3002:80` → 접속 주소 **http://192.168.1.88:3002**  
+- **Domain/FQDN** 필드는 비워 두거나, Coolify가 자동 부여한 값만 써도 됩니다.
+
+**방식 B – FQDN에 IP:포트 입력**  
+- **Domain / FQDN** 란에 `http://192.168.1.88:3001`(백엔드), `http://192.168.1.88:3002`(프론트) 처럼 넣을 수 있으면 그렇게 지정하고, **Port Exposes**도 위와 같이 맞춥니다.
+
+### 4) 정리 (로컬 IP 사용 시)
+
+| 구분 | 설정 |
+|------|------|
+| **엔드포인트** | Servers에 192.168.1.88(로컬) 한 개 |
+| **Destination** | 위 서버로 1개, 앱 배포 시 선택 |
+| **백엔드 주소** | `http://192.168.1.88:3001` (Port Mapping `3001:3000`) |
+| **프론트 주소** | `http://192.168.1.88:3002` (Port Mapping `3002:80`) |
+| **FRONTEND_URL** (백엔드 env) | `http://192.168.1.88:3002` |
+| **VITE_BASE_URL** (프론트 빌드 env) | `http://192.168.1.88:3001` |
+
+이렇게 맞춘 뒤 **Deploy** 하면, 같은 LAN에서 `http://192.168.1.88:3002`로 웹, `http://192.168.1.88:3001`로 API 접속 가능합니다.
+
+---
+
 ## 1. 백엔드(API) 배포
 
 ### 1-1. 리소스 추가
@@ -67,6 +124,7 @@ curl -fsSL https://raw.githubusercontent.com/sawolsamsip/mongoori-rides/main/scr
 1. Coolify 대시보드 → **Project** 선택 (또는 새로 생성) → **+ Add Resource** → **Application**.
 2. **Source**: GitHub 등으로 `sawolsamsip/mongoori-rides` 저장소 연결.
 3. **Branch**: `main` (또는 사용하는 브랜치).
+4. **Destination**: 0-5에서 확인한 Destination 선택 (192.168.1.88에 배포되도록).
 
 ### 1-2. 빌드/실행 설정
 
@@ -76,7 +134,8 @@ curl -fsSL https://raw.githubusercontent.com/sawolsamsip/mongoori-rides/main/scr
 | **Build Pack** | Nixpacks (Node 감지) |
 | **Build Command** | 비워두거나 `npm install` (기본) |
 | **Start Command** | `npm start` 또는 `node server.js` |
-| **Port** | `3000` (Express 기본 포트) |
+| **Port** / **Port Exposes** | `3000` (Express 기본 포트) |
+| **Port Mappings** (로컬 IP 접속 시) | `3001:3000` → 접속 주소 `http://192.168.1.88:3001` |
 
 `server/package.json`에 `"start": "node server.js"` 있으면 **Start Command**는 `npm start`로 두면 됩니다.
 
@@ -93,7 +152,7 @@ Coolify 해당 Application **Environment Variables**에 아래 추가 (로컬 `s
 - `IMAGEKIT_URL_ENDPOINT`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET` (웹훅 URL 정한 뒤 Stripe에서 발급한 값으로 설정)
-- `FRONTEND_URL` → **프론트 배포 후** 넣기 (예: `https://your-frontend-domain.com`)
+- `FRONTEND_URL` → **프론트 배포 후** 넣기 (로컬: `http://192.168.1.88:3002`)
 
 **선택**
 
@@ -126,6 +185,7 @@ Coolify 해당 Application **Environment Variables**에 아래 추가 (로컬 `s
 | **Build Pack** | Nixpacks |
 | **Is it a static site?** | **Yes** (체크) |
 | **Publish Directory** | `dist` |
+| **Port Mappings** (로컬 IP 접속 시) | `3002:80` → 접속 주소 `http://192.168.1.88:3002` |
 
 Nixpacks가 `client` 안에서 `npm install` → `npm run build` 하고, 결과물 `dist`를 웹 서버(Nginx 등)로 서빙합니다.
 
@@ -135,13 +195,13 @@ Nixpacks가 `client` 안에서 `npm install` → `npm run build` 하고, 결과�
 
 | Name | Value |
 |------|--------|
-| `VITE_BASE_URL` | 1단계에서 적어둔 **백엔드 URL** (끝에 `/` 없이, 예: `https://api.mongoori.com`) |
+| `VITE_BASE_URL` | 백엔드 URL (끝에 `/` 없이). 로컬: `http://192.168.1.88:3001` / 도메인: `https://api.mongoori.com` |
 
 이 값이 빌드 시 프론트 코드에 들어가서, 배포된 사이트는 이 API 주소로 요청합니다.
 
 ### 2-4. 도메인
 
-- **Domain**: 사용자가 접속할 주소 (예: `mongoori.com` 또는 `www.mongoori.com`).
+- **Domain/FQDN**: 도메인 쓰면 여기 입력. 로컬 IP만 쓸 때는 0-5처럼 **Port Mappings** `3002:80`만 넣고 `http://192.168.1.88:3002`로 접속하면 됩니다.
 
 ### 2-5. 배포
 
@@ -165,6 +225,25 @@ Nixpacks가 `client` 안에서 `npm install` → `npm run build` 하고, 결과�
 4. 생성 후 **Signing secret** (`whsec_...`) 복사.
 5. Coolify 백엔드 **Environment**에 `STRIPE_WEBHOOK_SECRET` = `whsec_...` 로 설정 후 재배포/재시작.
 
+### 3-3. Tesla Fleet API 리전 등록
+
+Owner가 Tesla 연결 후 **"Account must be registered in the current region"** 오류가 나면, **리전 등록**을 한 번 해야 합니다.
+
+1. [Tesla Developer](https://developer.tesla.com)에서 앱의 **Allowed Origin URLs**에 API 도메인 포함 (예: `https://api.mongoori.com`).
+2. **Public key 호스팅**: EC 공개키(PEM, secp256r1)를 아래 URL에서 제공 가능하도록 설정:
+   - `https://<API도메인>/.well-known/appspecific/com.tesla.3p.public-key.pem`  
+   (예: `https://api.mongoori.com/.well-known/appspecific/com.tesla.3p.public-key.pem`)  
+   생성 예: `openssl ecparam -name prime256v1 -genkey -noout -out key.pem` → `openssl ec -in key.pem -pubout -out public-key.pem`
+3. 서버에서 **한 번만** 실행 (로컬 또는 배포 서버에서 `.env` 로드 후):
+   ```bash
+   cd server
+   TESLA_PARTNER_DOMAIN=api.mongoori.com node scripts/register-tesla-region.js
+   ```
+   `TESLA_PARTNER_DOMAIN`은 Allowed Origins의 **루트 도메인**과 맞추면 됩니다 (예: `api.mongoori.com`).
+4. 성공하면 해당 리전에서 Owner가 Connect Tesla → Sync 후 차량 목록을 볼 수 있습니다.
+
+자세한 문서: [Tesla Fleet API – Partner Endpoints (register)](https://developer.tesla.com/docs/fleet-api/endpoints/partner-endpoints#register)
+
 ---
 
 ## 4. 자동 배포 (Git 푸시 시)
@@ -181,6 +260,7 @@ Nixpacks가 `client` 안에서 `npm install` → `npm run build` 하고, 결과�
 - [ ] Coolify에 프론트 Application 추가 (Base Directory: `client`, Static, Publish: `dist`), `VITE_BASE_URL` 설정, 배포 완료, URL 확인
 - [ ] 백엔드 `FRONTEND_URL` = 프론트 URL
 - [ ] Stripe 웹훅 URL = `https://<백엔드 URL>/api/payment/webhook`, `STRIPE_WEBHOOK_SECRET` 설정
+- [ ] (Tesla 사용 시) Tesla 리전 등록 실행: `TESLA_PARTNER_DOMAIN=api.mongoori.com node server/scripts/register-tesla-region.js`
 - [ ] 브라우저에서 프론트 URL 접속 → 로그인·차량 목록·결제 테스트
 
 ---
@@ -198,5 +278,10 @@ Nixpacks가 `client` 안에서 `npm install` → `npm run build` 하고, 결과�
 - **결제 후 예약 안 생김**  
   - Stripe 웹훅 URL이 백엔드 실제 URL과 일치하는지, `STRIPE_WEBHOOK_SECRET`이 Stripe에서 복사한 값인지 확인.  
   - Coolify 백엔드 로그에서 `/api/payment/webhook` 4xx/5xx 에러 확인.
+
+- **Tesla: "Account must be registered in the current region"**  
+  - Tesla Fleet API는 **리전당 한 번** Partner 등록이 필요합니다.  
+  - 위 **3-3. Tesla Fleet API 리전 등록**대로 `TESLA_PARTNER_DOMAIN` 설정 후 `server/scripts/register-tesla-region.js` 실행.  
+  - Developer 콘솔에서 Allowed Origins에 API 도메인 포함 여부와, 공개키 URL 호스팅 여부 확인.
 
 이 가이드대로 하면 Coolify만으로 백엔드·프론트를 배포하고, 푸시할 때마다 자동으로 최신 버전이 반영됩니다.

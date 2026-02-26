@@ -18,3 +18,9 @@ export const protect = async (req, res, next)=>{
         return res.json({success: false, message: "not authorized"})
     }
 }
+
+export const requireAdmin = async (req, res, next) => {
+    if (!req.user) return res.json({ success: false, message: "not authorized" });
+    if (req.user.role !== "admin") return res.status(403).json({ success: false, message: "Admin only" });
+    next();
+};

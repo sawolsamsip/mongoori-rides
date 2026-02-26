@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/auth.js";
-import { addCar, changeRoleToOwner, deleteCar, getDashboardData, getOwnerCars, toggleCarAvailability, updateCarPrice, updateUserImage } from "../controllers/ownerController.js";
+import { addCar, addCarsFromTesla, changeRoleToOwner, deleteCar, getDashboardData, getOwnerCars, linkCarToTesla, toggleCarAvailability, updateCarPrice, updateUserImage } from "../controllers/ownerController.js";
 import upload from "../middleware/multer.js";
 
 const ownerRouter = express.Router();
@@ -10,6 +10,8 @@ ownerRouter.post("/add-car", upload.single("image"), protect, addCar)
 ownerRouter.get("/cars", protect, getOwnerCars)
 ownerRouter.post("/toggle-car", protect, toggleCarAvailability)
 ownerRouter.post("/update-car-price", protect, updateCarPrice)
+ownerRouter.post("/link-tesla", protect, linkCarToTesla)
+ownerRouter.post("/add-cars-from-tesla", protect, addCarsFromTesla)
 ownerRouter.post("/delete-car", protect, deleteCar)
 
 ownerRouter.get('/dashboard', protect, getDashboardData)

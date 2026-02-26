@@ -13,6 +13,7 @@ import paymentRouter from "./routes/paymentRoutes.js";
 import invoiceRouter from "./routes/invoiceRoutes.js";
 import incidentalRouter from "./routes/incidentalRoutes.js";
 import teslaRouter from "./routes/teslaRoutes.js";
+import adminRouter from "./routes/adminRoutes.js";
 
 // Initialize Express App
 const app = express();
@@ -69,6 +70,7 @@ app.use('/api/payment', paymentRouter)
 app.use('/api/invoices', invoiceRouter)
 app.use('/api/incidentals', incidentalRouter)
 app.use('/api/tesla', teslaRouter)
+app.use('/api/admin', adminRouter)
 
 const PORT = process.env.PORT || 3000;
 

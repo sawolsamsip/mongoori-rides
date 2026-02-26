@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom'
 const weeklyFromDaily = (pricePerDay) => Math.round(((pricePerDay || 0) * 7) / 1.2 * 100) / 100
 
 const ManageCars = () => {
-  const { axios, currency } = useAppContext()
+  const { axios, currency, fetchCars } = useAppContext()
   const [cars, setCars] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingCar, setEditingCar] = useState(null) // { _id, weeklyPrice }
@@ -42,6 +42,7 @@ const ManageCars = () => {
       if (data.success) {
         toast.success(data.message)
         fetchOwnerCars()
+        if (typeof fetchCars === 'function') fetchCars()
       }
     } catch (error) {
       toast.error(error.message)
@@ -55,6 +56,7 @@ const ManageCars = () => {
       if (data.success) {
         toast.success(data.message)
         fetchOwnerCars()
+        if (typeof fetchCars === 'function') fetchCars()
       }
     } catch (error) {
       toast.error(error.message)
@@ -101,6 +103,14 @@ const ManageCars = () => {
     }
   }, [])
 
+  const getCarImage = (car) => {
+    // Tesla fleet: use a consistent server image instead of uploaded photos.
+    if ((car.brand && car.brand.toLowerCase() === 'tesla') || car.teslaVehicleId) {
+      return assets.main_car
+    }
+    return Array.isArray(car.image) ? car.image[0] : (car.image || upload_icon)
+  }
+
   if (loading) {
     return <div className='flex-1 flex justify-center items-center min-h-[50vh]'><div className='w-8 h-8 border-4 border-zinc-700 border-t-white rounded-full animate-spin'></div></div>
   }
@@ -142,7 +152,7 @@ const ManageCars = () => {
                                     <td className='px-8 py-6'>
                                         <div className='flex items-center gap-5'>
                                             <div className='w-20 md:w-28 aspect-video rounded-2xl bg-white flex items-center justify-center overflow-hidden'>
-                                                <img src={Array.isArray(car.image) ? car.image[0] : (car.image || upload_icon)} alt={car.model} className="h-full w-full object-contain p-2 group-hover:scale-110 transition-transform" />
+                                                <img src={getCarImage(car)} alt={car.model} className="h-full w-full object-contain p-2 group-hover:scale-110 transition-transform" />
                                             </div>
                                             <div>
                                                 <p className='font-bold text-base md:text-lg tracking-tight'>{car.brand} {car.model}</p>

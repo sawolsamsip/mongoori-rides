@@ -52,6 +52,11 @@ const Navbar = () => {
 
         {/* 3. Right Side Buttons */}
         <div className='hidden md:flex items-center gap-8'>
+          {user?.role === 'admin' && (
+            <NavLink to='/admin' className={({ isActive }) => `text-sm font-medium uppercase tracking-widest ${isActive ? 'text-white' : 'text-gray-400 hover:text-white transition-colors'}`}>
+              Admin
+            </NavLink>
+          )}
           <button 
             onClick={() => navigate('/owner/dashboard')} 
             className='text-sm font-medium text-gray-400 hover:text-white transition-colors uppercase tracking-widest'
@@ -64,6 +69,7 @@ const Navbar = () => {
               <img src={user?.image || assets.user_profile} alt="Profile" className='w-10 h-10 rounded-full border border-zinc-700 object-cover' />
               <div className='absolute right-0 top-full pt-4 hidden group-hover:block'>
                 <div className='bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-2xl shadow-2xl flex flex-col min-w-[160px] overflow-hidden'>
+                  {user?.role === 'admin' && <p onClick={() => navigate('/admin')} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-gray-300 hover:text-white transition-colors'>Admin</p>}
                   <p onClick={() => navigate('/owner/dashboard')} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-gray-300 hover:text-white transition-colors'>Dashboard</p>
                   <p onClick={logout} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-red-400 hover:text-red-300 transition-colors'>Logout</p>
                 </div>
@@ -99,6 +105,7 @@ const Navbar = () => {
           
           <div className='h-[1px] bg-zinc-800/50 my-4'></div>
           
+          {user?.role === 'admin' && <NavLink to='/admin' onClick={() => setShowMenu(false)} className={({ isActive }) => isActive ? 'text-white font-medium' : 'hover:text-white'}>Admin</NavLink>}
           <button onClick={() => { setShowMenu(false); navigate('/owner/dashboard'); }} className='text-left hover:text-white transition-colors'>Host a Car</button>
           
           {token ? (

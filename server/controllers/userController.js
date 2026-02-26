@@ -10,25 +10,26 @@ const generateToken = (userId)=>{
     return jwt.sign(payload, process.env.JWT_SECRET)
 }
 
-// Register User
+// Register User (role: 'user' = driver/renter, 'owner' = car host)
 export const registerUser = async (req, res)=>{
     try {
-        const {name, email, password} = req.body
+        const { name, email, password, role: requestedRole } = req.body
 
         if(!name || !email || !password || password.length < 8){
             return res.json({success: false, message: 'Fill all the fields'})
         }
 
+        const role = requestedRole === 'owner' ? 'owner' : 'user'
         const userExists = await User.findOne({email})
         if(userExists){
             return res.json({success: false, message: 'User already exists'})
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        const user = await User.create({name, email, password: hashedPassword})
+        const user = await User.create({ name, email, password: hashedPassword, role })
         const token = generateToken(user._id.toString())
-        res.json({success: true, token})
-
+        const safeUser = { _id: user._id, name: user.name, email: user.email, role: user.role, image: user.image }
+        res.json({ success: true, token, user: safeUser })
     } catch (error) {
         console.log(error.message);
         res.json({success: false, message: error.message})
@@ -48,10 +49,11 @@ export const loginUser = async (req, res)=>{
             return res.json({success: false, message: "Invalid Credentials" })
         }
         const token = generateToken(user._id.toString())
-        res.json({success: true, token})
+        const safeUser = { _id: user._id, name: user.name, email: user.email, role: user.role, image: user.image }
+        res.json({ success: true, token, user: safeUser })
     } catch (error) {
         console.log(error.message);
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message })
     }
 }
 

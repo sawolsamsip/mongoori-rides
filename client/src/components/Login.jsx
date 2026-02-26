@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 
 const Login = () => {
-  const [state, setState] = useState('Login') // 'Login' 또는 'Sign Up'
+  const [state, setState] = useState('Login') // 'Login' or 'Sign Up'
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [signUpRole, setSignUpRole] = useState('user') // 'user' = driver (rent cars), 'owner' = host (list my car)
 
   // AppContext에서 필요한 함수들 가져오기
   const { setShowLogin, axios, setToken, setUser } = useAppContext()
@@ -29,7 +30,7 @@ const Login = () => {
         const { data } = await axios.post('/api/user/login', { email, password })
         if (data.success) {
           setToken(data.token)
-          setUser(data.user)
+          setUser(data.user || null)
           localStorage.setItem('token', data.token)
           setShowLogin(false)
           toast.success('Welcome back to mongoori rides!')
@@ -37,14 +38,13 @@ const Login = () => {
           toast.error(data.message)
         }
       } else {
-        // 회원가입 API 호출
-        const { data } = await axios.post('/api/user/register', { name, email, password })
+        const { data } = await axios.post('/api/user/register', { name, email, password, role: signUpRole })
         if (data.success) {
           setToken(data.token)
-          setUser(data.user)
+          setUser(data.user || { role: signUpRole, name, email })
           localStorage.setItem('token', data.token)
           setShowLogin(false)
-          toast.success('Account created successfully!')
+          toast.success(signUpRole === 'owner' ? 'Host account created. Go to Owner Portal to add your car.' : 'Account created successfully!')
         } else {
           toast.error(data.message)
         }
@@ -143,6 +143,22 @@ const Login = () => {
               className='bg-black/50 border border-zinc-800 p-4 rounded-2xl text-white outline-none focus:border-gray-400 transition-colors text-sm'
             />
           </div>
+
+          {state === 'Sign Up' && (
+            <div className='flex flex-col gap-2'>
+              <label className='text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]'>I want to</label>
+              <div className='flex gap-3'>
+                <label className={`flex-1 flex items-center justify-center p-4 rounded-2xl border cursor-pointer transition-colors bg-black/50 hover:border-gray-500 ${signUpRole === 'user' ? 'border-white bg-white/5' : 'border-zinc-800'}`}>
+                  <input type='radio' name='signUpRole' value='user' checked={signUpRole === 'user'} onChange={() => setSignUpRole('user')} className='sr-only' />
+                  <span className='text-sm text-white'>Rent cars (Driver)</span>
+                </label>
+                <label className={`flex-1 flex items-center justify-center p-4 rounded-2xl border cursor-pointer transition-colors bg-black/50 hover:border-gray-500 ${signUpRole === 'owner' ? 'border-white bg-white/5' : 'border-zinc-800'}`}>
+                  <input type='radio' name='signUpRole' value='owner' checked={signUpRole === 'owner'} onChange={() => setSignUpRole('owner')} className='sr-only' />
+                  <span className='text-sm text-white'>List my car (Host)</span>
+                </label>
+              </div>
+            </div>
+          )}
 
           <button 
             type="submit" 

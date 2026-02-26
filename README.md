@@ -79,8 +79,13 @@ mongoori-rides/
 │   ├── server.js
 │   └── package.json
 │
+├── docs/
+│   └── ROLES_AND_TESLA.md   # 역할(운전자/차량주인/운영자), Tesla Fleet·Partner·Telemetry 안내
+├── DEPLOY.md                # Coolify 배포 가이드
 └── README.md
 ```
+
+**문서 요약**: `README.md`(개요·환경변수·구조), `DEPLOY.md`(배포), `docs/ROLES_AND_TESLA.md`(역할·Tesla API), `server/.env.example`·`client/.env.example`(환경 변수 예시).
 
 ---
 
@@ -189,6 +194,25 @@ Runs at [http://localhost:5173](http://localhost:5173).
 
 - **Frontend**: `cd client && npm run build` → `dist/`. Deploy (e.g. Vercel) with root = `client`, build = `npm run build`, output = `dist`. Set `VITE_BASE_URL` to your API URL in production.
 - **Backend**: Deploy `server` (e.g. Render), set env vars, expose `/api/payment/webhook` for Stripe.
+
+---
+
+## Version & GitHub
+
+- **현재 버전**: **1.0.0** (루트 `package.json`, `client/package.json`, `server/package.json` 동일).
+- **GitHub에 올리기**:
+  1. GitHub에서 새 저장소 생성 (예: `mongoori-rides`), README/ .gitignore 추가하지 않음.
+  2. 로컬에서:
+     ```bash
+     cd /path/to/mongoori-rides
+     git status
+     git add .
+     git commit -m "v1.0.0: Tesla Fleet, roles, admin, docs"
+     git branch -M main
+     git remote add origin https://github.com/YOUR_USERNAME/mongoori-rides.git
+     git push -u origin main
+     ```
+  3. `.env`·`node_modules`·`server/key.pem`은 `.gitignore`에 있어 커밋되지 않음. `server/.env.example`·`client/.env.example`은 포함됨.
 
 ---
 

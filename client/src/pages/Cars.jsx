@@ -29,7 +29,7 @@ const Cars = () => {
             }
             setLoading(false);
         } else if (cars && cars.length === 0) {
-             setLoading(false); // 차량 데이터가 아예 없을 경우 무한 로딩 방지
+             setLoading(false);
         }
     }, [cars, searchModel]);
 

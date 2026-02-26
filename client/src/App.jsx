@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAppContext } from './context/AppContext'
 import { Toaster } from 'react-hot-toast'
 
@@ -21,13 +21,13 @@ import Login from './components/Login'
 
 // 오너 레이아웃 및 페이지
 import Layout from './pages/owner/Layout'
-import AddCar from './pages/owner/AddCar'
 import ManageCars from './pages/owner/ManageCars'
 import Dashboard from './pages/owner/Dashboard'
 import ManageBookings from './pages/owner/ManageBookings'
 import Finances from './pages/owner/Finances'
 import Incidentals from './pages/owner/Incidentals'
 import Tesla from './pages/owner/Tesla'
+import Admin from './pages/admin/Admin'
 
 const App = () => {
   const { showLogin } = useAppContext()
@@ -55,6 +55,7 @@ const App = () => {
                   <Route path='/privacy-policy' element={<PrivacyPolicy />} />
                   <Route path='/terms-of-use' element={<TermsOfUse />} />
                   <Route path='/insurance' element={<Insurance />} />
+                  <Route path='/admin' element={<Admin />} />
                 </Routes>
               </div>
               <Footer />
@@ -65,7 +66,7 @@ const App = () => {
         {/* --- 2. 오너 관리자 영역 --- */}
         <Route path='/owner' element={<Layout />}>
           <Route path='dashboard' element={<Dashboard />} />
-          <Route path='add-car' element={<AddCar />} />
+          <Route path='add-car' element={<Navigate to='/owner/tesla' replace />} />
           <Route path='manage-cars' element={<ManageCars />} />
           <Route path='manage-bookings' element={<ManageBookings />} />
           <Route path='finances' element={<Finances />} />

@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 const BookingSuccess = () => {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
-  const { axios, token } = useAppContext()
+  const { axios, token, fetchCars } = useAppContext()
   const navigate = useNavigate()
   const [status, setStatus] = useState('confirming')
 
@@ -34,6 +34,7 @@ const BookingSuccess = () => {
         if (data.success) {
           setStatus('success')
           toast.success('Payment confirmed. Your booking and invoice are ready.')
+          await fetchCars() // refresh fleet list so "Booked" shows without manual reload
           setTimeout(() => navigate('/my-bookings'), 2000)
         } else {
           setStatus('error')

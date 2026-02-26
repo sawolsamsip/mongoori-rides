@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 
 const AddCar = () => {
-  const { axios, currency } = useAppContext()
+  const { axios, currency, user } = useAppContext()
 
   const [image, setImage] = useState(null)
   const [car, setCar] = useState({
@@ -70,6 +70,39 @@ const AddCar = () => {
   // 공통 Input 클래스 스타일 (코드를 깔끔하게 유지하기 위함)
   const inputClass = "bg-black/50 border border-zinc-800 p-4 rounded-2xl text-white outline-none focus:border-gray-400 transition-colors text-sm w-full"
   const labelClass = "text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 block"
+
+  // Tesla-connected owners should primarily add vehicles via the Tesla Sync page.
+  const teslaConnected = !!user?.teslaAccessToken
+
+  if (teslaConnected) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className='w-full text-white'
+      >
+        <div className='mb-10'>
+          <h2 className='text-[10px] font-bold tracking-[0.3em] text-gray-500 uppercase mb-2'>Partner Program</h2>
+          <h1 className='text-3xl md:text-4xl font-black tracking-tight'>Tesla Sync Only.</h1>
+          <p className='text-gray-400 text-sm mt-3 font-light max-w-xl'>
+            Your account is connected to Tesla. Vehicle listings are managed via{' '}
+            <span className='font-semibold text-white'>Tesla &rarr; Add vehicles to fleet</span>. Please sync your
+            Tesla account and select vehicles to add to your Mongoori fleet from the Tesla page.
+          </p>
+        </div>
+        <div className='rounded-3xl border border-zinc-800 bg-zinc-900/40 p-10 max-w-2xl'>
+          <p className='text-gray-300 text-sm mb-3'>
+            To keep specs, range, and telemetry accurate, new Tesla vehicles should be registered via{' '}
+            <span className='font-semibold text-white'>Tesla Sync</span> instead of manual entry.
+          </p>
+          <p className='text-gray-500 text-sm'>
+            Go to the <span className='font-semibold text-white'>Tesla</span> section in the sidebar, sync your
+            account, and add vehicles from there. You can then edit pricing and details in <span className='font-semibold text-white'>Manage Cars</span>.
+          </p>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div 
