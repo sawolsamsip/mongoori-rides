@@ -1,6 +1,9 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import connectDB from "./configs/db.js";
 import { handleStripeWebhook } from "./controllers/paymentController.js";
 import userRouter from "./routes/userRoutes.js";
@@ -46,6 +49,16 @@ app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), hand
 
 // Middleware
 app.use(express.json());
+
+// Tesla Fleet API: public key for partner region registration (must be at this exact path)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const teslaPublicKeyPath = path.join(__dirname, "public-key.pem");
+app.get("/.well-known/appspecific/com.tesla.3p.public-key.pem", (req, res) => {
+  if (!fs.existsSync(teslaPublicKeyPath)) {
+    return res.status(404).send("Tesla public key not configured");
+  }
+  res.type("application/x-pem-file").send(fs.readFileSync(teslaPublicKeyPath, "utf8"));
+});
 
 // Routes
 app.get('/', (req, res) => res.send("mongoori rides API is running 🚀"))
