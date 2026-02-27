@@ -25,8 +25,7 @@ export const AppProvider = ({ children }) => {
     // 사용자 데이터 가져오기 (로그인 상태 확인)
     const fetchUser = async (authToken) => {
         try {
-            // 헤더에 토큰이 확실히 들어있는지 재확인
-            const { data } = await axios.get('/api/user/data', {
+            const { data } = await axios.get(`/api/user/data?t=${Date.now()}`, {
                 headers: { Authorization: authToken }
             })
 
@@ -44,12 +43,12 @@ export const AppProvider = ({ children }) => {
         }
     }
 
-    // 차량 목록 가져오기
+    // 차량 목록 가져오기 (캐시 방지로 항상 최신 목록)
     const fetchCars = async () => {
         try {
-            const { data } = await axios.get('/api/user/cars')
+            const { data } = await axios.get(`/api/user/cars?t=${Date.now()}`)
             if (data.success) {
-                setCars(data.cars)
+                setCars(Array.isArray(data.cars) ? data.cars : [])
             }
         } catch (error) {
             console.error("Fetch Cars Error:", error)

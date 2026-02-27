@@ -29,7 +29,9 @@ const NavbarOwner = () => {
                 
                 {/* 오너 정보 (PC에서만 표시) */}
                 <div className='hidden md:flex flex-col items-end'>
-                    <p className='text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold mb-0.5'>Owner Portal</p>
+                    <p className='text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold mb-0.5'>
+                        {user?.role === 'admin' ? 'Operator' : user?.role === 'owner' ? 'Car Owner' : 'Driver'}
+                    </p>
                     <p className='text-sm font-medium text-white tracking-wide'>{user?.name || 'Partner Host'}</p>
                 </div>
                 

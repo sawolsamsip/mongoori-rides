@@ -10,7 +10,12 @@ const Sidebar = () => {
     const [image, setImage] = useState(null)
     const [isUploading, setIsUploading] = useState(false)
 
-    // 이미지를 선택하면 바로 서버에 업로드하는 로직으로 개선
+    // Refetch user when sidebar mounts so role (e.g. Operator) is always up to date
+    useEffect(() => {
+        if (token) fetchUser(token)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token])
+
     useEffect(() => {
         if (image) {
             updateImage();
@@ -58,7 +63,9 @@ const Sidebar = () => {
                     </label>
                 </div>
                 <p className='text-white mt-4 hidden md:block font-medium tracking-wide'>{user?.name || 'Partner Host'}</p>
-                <p className='text-gray-500 text-[10px] uppercase tracking-widest hidden md:block mt-1'>mongoori club</p>
+                <p className='text-gray-500 text-[10px] uppercase tracking-widest hidden md:block mt-1'>
+                    {user?.role === 'admin' ? 'Operator' : user?.role === 'owner' ? 'Car Owner' : 'Driver'}
+                </p>
             </div>
 
             {/* 네비게이션 링크 영역 */}

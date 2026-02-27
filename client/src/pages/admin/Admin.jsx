@@ -37,9 +37,26 @@ const Admin = () => {
           animate={{ opacity: 1, y: 0 }}
           className='mb-12'
         >
-          <h1 className='text-3xl md:text-4xl font-black tracking-tight'>Operator</h1>
+          <h1 className='text-3xl md:text-4xl font-black tracking-tight'>Operator Dashboard</h1>
           <p className='text-gray-400 mt-2 text-sm'>
-            Platform overview. Tesla data is fetched with the Fleet Partner token and shown to owners and drivers.
+            Platform overview and Tesla Fleet integration status.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className='mb-10 p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800'
+        >
+          <h2 className='text-sm font-bold text-gray-300 uppercase tracking-widest mb-3'>What you can do as Operator</h2>
+          <ul className='text-gray-400 text-sm space-y-2'>
+            <li>• <strong className='text-white'>This dashboard</strong> — View user count, owner count, registered cars, and bookings.</li>
+            <li>• <strong className='text-white'>Tesla Fleet Partner</strong> — With token in server .env, owners and drivers get charging/telemetry without connecting Tesla per account.</li>
+            <li>• <strong className='text-white'>Owner portal</strong> — If this account is also an owner, you can use Manage Cars, Bookings, etc. as usual.</li>
+          </ul>
+          <p className='text-gray-500 text-xs mt-4'>
+            Request additional features (e.g. booking list, user list, hide car) from development if needed.
           </p>
         </motion.div>
 
@@ -71,7 +88,7 @@ const Admin = () => {
               </p>
               <p className='text-gray-400 text-sm mt-2'>{data.message}</p>
               <p className='text-gray-500 text-xs mt-3'>
-                Set <code className='bg-zinc-800 px-1 rounded'>TESLA_PARTNER_ACCESS_TOKEN</code> or <code className='bg-zinc-800 px-1 rounded'>TESLA_ACCESS_TOKEN</code> in server .env so charging sessions and telemetry are available to owners (and drivers) without each owner connecting Tesla.
+                Set <code className='bg-zinc-800 px-1 rounded'>TESLA_PARTNER_ACCESS_TOKEN</code> or <code className='bg-zinc-800 px-1 rounded'>TESLA_ACCESS_TOKEN</code> in server .env so owners and drivers can see charging and telemetry without connecting Tesla.
               </p>
             </div>
           </motion.div>

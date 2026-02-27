@@ -11,8 +11,17 @@ import Newsletter from '../components/Newsletter'
 
 const Home = () => {
   const navigate = useNavigate()
-  const { cars, pickupDate, setPickupDate, returnDate, setReturnDate } = useAppContext()
+  const { cars, fetchCars, pickupDate, setPickupDate, returnDate, setReturnDate } = useAppContext()
   const [selectedModel, setSelectedModel] = useState('')
+
+  // 메인 진입 시에도 서버에서 최신 차량 목록 로드 (Fleet과 동일한 목록 유지, 캐시 방지)
+  React.useEffect(() => {
+    if (typeof fetchCars === 'function') fetchCars()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const availableCars = Array.isArray(cars) ? cars.filter(car => car.isAvaliable !== false) : []
+  const carModels = Array.from(new Set(availableCars.map(car => car.model)))
 
   const handleSearch = () => {
     if (!pickupDate || !returnDate) {
@@ -26,8 +35,6 @@ const Home = () => {
     navigate('/fleet', { state: { model: selectedModel } });
     window.scrollTo(0, 0);
   }
-
-  const carModels = Array.from(new Set(cars.map(car => car.model)))
 
   return (
     <div className='text-white bg-black'>

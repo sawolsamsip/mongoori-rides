@@ -57,18 +57,20 @@ export const loginUser = async (req, res)=>{
     }
 }
 
-// Get User data using Token (JWT)
+// Get User data using Token (JWT). Always fresh from DB so role changes (e.g. set-admin) show up.
 export const getUserData = async (req, res) =>{
     try {
-        const {user} = req;
-        res.json({success: true, user})
+        const { user } = req;
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.json({ success: true, user })
     } catch (error) {
         console.log(error.message);
-        res.json({success: false, message: error.message})
+        res.json({ success: false, message: error.message })
     }
 }
 
-// Get All Cars for the Frontend (with availability: has active booking = not available for new renters)
+// Get All Cars for the Frontend. Only isAvaliable: true (Visible on fleet). Hidden cars never returned here.
+// Also adds hasActiveBooking so UI can show Booked vs Available.
 export const getCars = async (req, res) =>{
     try {
         const cars = await Car.find({ isAvaliable: true }).lean();
@@ -84,6 +86,7 @@ export const getCars = async (req, res) =>{
                 return { ...car, hasActiveBooking: !!hasActiveBooking };
             })
         );
+        res.set("Cache-Control", "no-store, no-cache, must-revalidate");
         res.json({ success: true, cars: withAvailability });
     } catch (error) {
         console.log(error.message);

@@ -1,6 +1,6 @@
 {
   "name": "mongoori-rides",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Premium Tesla rental platform (Irvine, CA) — MERN, Stripe, Tesla Fleet API",
   "private": true,
   "scripts": {

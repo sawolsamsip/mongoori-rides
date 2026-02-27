@@ -5,6 +5,8 @@ import CarCard from './CarCard'
 
 const FeaturedSection = () => {
   const { cars } = useAppContext()
+  const availableCars = Array.isArray(cars) ? cars.filter(car => car.isAvaliable !== false) : []
+  const toShow = availableCars.slice(0, 3)
 
   return (
     <motion.div 
@@ -16,8 +18,8 @@ const FeaturedSection = () => {
     >
       <h2 className='text-3xl font-bold mb-16 tracking-tight'>Available Models</h2>
       <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
-        {cars.slice(0, 3).map((car, index) => (
-          <CarCard key={index} car={car} />
+        {toShow.map((car, index) => (
+          <CarCard key={car._id || index} car={car} />
         ))}
       </div>
     </motion.div>

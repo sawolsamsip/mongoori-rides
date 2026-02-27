@@ -68,7 +68,13 @@ const Navbar = () => {
             <div className='relative group cursor-pointer'>
               <img src={user?.image || assets.user_profile} alt="Profile" className='w-10 h-10 rounded-full border border-zinc-700 object-cover' />
               <div className='absolute right-0 top-full pt-4 hidden group-hover:block'>
-                <div className='bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-2xl shadow-2xl flex flex-col min-w-[160px] overflow-hidden'>
+                <div className='bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-2xl shadow-2xl flex flex-col min-w-[180px] overflow-hidden'>
+                  <p className='px-6 py-3 text-gray-500 text-xs border-b border-zinc-800'>
+                    {user?.name}
+                    <span className='ml-2 text-gray-600'>
+                      {user?.role === 'admin' ? 'Operator' : user?.role === 'owner' ? 'Car Owner' : 'Driver'}
+                    </span>
+                  </p>
                   {user?.role === 'admin' && <p onClick={() => navigate('/admin')} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-gray-300 hover:text-white transition-colors'>Admin</p>}
                   <p onClick={() => navigate('/owner/dashboard')} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-gray-300 hover:text-white transition-colors'>Dashboard</p>
                   <p onClick={logout} className='px-6 py-4 hover:bg-zinc-800 text-sm cursor-pointer text-red-400 hover:text-red-300 transition-colors'>Logout</p>

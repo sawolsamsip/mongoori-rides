@@ -6,7 +6,7 @@ import CarCard from '../components/CarCard'
 import Loader from '../components/Loader'
 
 const Cars = () => {
-    const { cars } = useAppContext()
+    const { cars, fetchCars } = useAppContext()
     const [filterCars, setFilterCars] = useState([])
     const [loading, setLoading] = useState(true)
     const location = useLocation()
@@ -14,29 +14,36 @@ const Cars = () => {
 
     const searchModel = location.state?.model;
 
-    // 페이지 진입 시 스크롤 맨 위로
+    // Fleet 페이지 진입 시 항상 서버에서 최신 목록 조회 (캐시/이전 데이터 방지)
     useEffect(() => {
         window.scrollTo(0, 0);
+        setLoading(true);
+        const p = typeof fetchCars === 'function' ? fetchCars() : Promise.resolve();
+        p.finally(() => setLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        if (cars && cars.length > 0) {
+        const availableOnly = Array.isArray(cars) ? cars.filter(car => car.isAvaliable !== false) : [];
+        if (availableOnly.length > 0) {
             if (searchModel && searchModel !== "") {
-                const filtered = cars.filter(car => car.model === searchModel);
+                const filtered = availableOnly.filter(car => car.model === searchModel);
                 setFilterCars(filtered);
             } else {
-                setFilterCars(cars);
+                setFilterCars(availableOnly);
             }
             setLoading(false);
-        } else if (cars && cars.length === 0) {
-             setLoading(false);
+        } else if (Array.isArray(cars)) {
+            setFilterCars([]);
+            setLoading(false);
         }
     }, [cars, searchModel]);
 
     // 필터 초기화 함수
     const clearFilter = () => {
-        navigate('/fleet', { state: {} }); // state를 비워서 다시 라우팅
-        setFilterCars(cars);
+        navigate('/fleet', { state: {} });
+        const availableOnly = Array.isArray(cars) ? cars.filter(car => car.isAvaliable !== false) : [];
+        setFilterCars(availableOnly);
     }
 
     if (loading) {

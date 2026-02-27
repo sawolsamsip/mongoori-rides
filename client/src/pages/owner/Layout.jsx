@@ -14,14 +14,21 @@ const Layout = () => {
       navigate('/')
       return
     }
+    // Refetch user when entering owner area so role (e.g. admin) is up to date
+    fetchUser(token)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
+
+  useEffect(() => {
+    if (!token || !user) return
     // 오너가 아닌 사용자가 오너 영역에 들어온 경우 한 번만 change-role 호출 후 유저 갱신 (Bookings/Incidents Unauthorized 방지)
-    if (user && user.role !== 'owner' && !upgradedRef.current) {
+    if (user.role !== 'owner' && user.role !== 'admin' && !upgradedRef.current) {
       upgradedRef.current = true
       axios.post('/api/owner/change-role')
         .then(({ data }) => data.success && fetchUser(token))
         .catch(() => { upgradedRef.current = false })
     }
-  }, [token, user, axios, fetchUser, navigate])
+  }, [token, user, axios, fetchUser])
 
   return (
     <div className='flex flex-col min-h-screen bg-black text-white font-sans'>
