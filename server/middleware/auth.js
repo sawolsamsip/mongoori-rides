@@ -4,18 +4,25 @@ import User from "../models/User.js";
 export const protect = async (req, res, next)=>{
     const token = req.headers.authorization;
     if(!token){
-        return res.json({success: false, message: "not authorized"})
+        return res.status(401).json({success: false, message: "not authorized"})
     }
     try {
-        const userId = jwt.decode(token, process.env.JWT_SECRET)
-
-        if(!userId){
-            return res.json({success: false, message: "not authorized"})
+        const payload = jwt.decode(token);
+        if (!payload) {
+            return res.status(401).json({ success: false, message: "not authorized" });
         }
-        req.user = await User.findById(userId).select("-password")
+        const userId = typeof payload === "string" ? payload : (payload.id ?? payload.sub ?? payload._id);
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "not authorized" });
+        }
+        req.user = await User.findById(userId).select("-password");
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "not authorized" });
+        }
         next();
     } catch (error) {
-        return res.json({success: false, message: "not authorized"})
+        console.error("Auth error:", error.message);
+        return res.status(401).json({ success: false, message: "not authorized" });
     }
 }
 

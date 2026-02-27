@@ -74,6 +74,15 @@ app.use('/api/admin', adminRouter)
 
 const PORT = process.env.PORT || 3000;
 
+// Global error handler: log and return 500 so we can see the real error in server logs
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err?.message || err);
+    if (err?.stack) console.error(err.stack);
+    if (!res.headersSent) {
+        res.status(500).json({ success: false, message: err?.message || "Internal server error" });
+    }
+});
+
 // 🚨 2. DB가 먼저 완벽히 연결된 후 서버(포트)를 열도록 수정
 connectDB().then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`))

@@ -36,7 +36,7 @@ export const AppProvider = ({ children }) => {
                 logout()
             }
         } catch (error) {
-            console.error("Fetch User Error:", error)
+            console.error("Fetch User Error:", error?.response?.status, error?.response?.data || error?.message)
             if (error.response?.status === 401) {
                 logout()
             }
@@ -51,7 +51,7 @@ export const AppProvider = ({ children }) => {
                 setCars(Array.isArray(data.cars) ? data.cars : [])
             }
         } catch (error) {
-            console.error("Fetch Cars Error:", error)
+            console.error("Fetch Cars Error:", error?.response?.status, error?.response?.data || error?.message)
         }
     }
 

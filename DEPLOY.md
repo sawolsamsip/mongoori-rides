@@ -16,6 +16,26 @@ Coolify로 **백엔드(API)** 와 **프론트엔드(웹)** 를 같은 저장소�
 
 ---
 
+## 배포 후 운영자(Operator) 계정 설정
+
+배포 환경 DB에는 로컬에서 돌린 `set-admin.js`가 반영되지 않습니다. **API로** 운영자로 바꾸려면:
+
+1. **Coolify(또는 서버) 환경 변수**에 추가:
+   ```bash
+   SET_ADMIN_SECRET=아무거나-긴-랜덤-문자열
+   ```
+2. **백엔드 재배포** 후, 아래 한 번만 호출 (curl 또는 Postman):
+   ```bash
+   curl -X POST https://api.mongoori.com/api/admin/set-role \
+     -H "Content-Type: application/json" \
+     -H "X-Set-Admin-Secret: 아무거나-긴-랜덤-문자열" \
+     -d '{"email":"contact@mongoori.com","role":"admin"}'
+   ```
+   실제 API 주소와 `X-Set-Admin-Secret` 값을 배포 환경에 맞게 바꾸세요.
+3. **contact@mongoori.com**으로 로그아웃 후 다시 로그인하면 **Operator**로 표시됩니다.
+
+---
+
 ## 0. 로컬 서버에 Coolify 설치 (예: 192.168.1.188)
 
 서버에 DUMB(미디어 서버), gala-node, npm 등이 이미 있어도 Coolify를 같이 쓸 수 있습니다. Coolify는 **포트 8000**으로 웹 UI를 띄우고, 앱들은 Docker 컨테이너로 격리됩니다.
